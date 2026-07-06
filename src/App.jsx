@@ -1,0 +1,45 @@
+import { useEffect } from 'react'
+import { Route, Routes, useLocation } from 'react-router-dom'
+import Navbar from './components/Navbar'
+import Footer from './components/Footer'
+import CartDrawer from './components/CartDrawer'
+import Home from './pages/Home'
+import Shop from './pages/Shop'
+import ProductDetail from './pages/ProductDetail'
+import About from './pages/About'
+import DealerNetwork from './pages/DealerNetwork'
+import TestDrive from './pages/TestDrive'
+import Checkout from './pages/Checkout'
+import NotFound from './pages/NotFound'
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [pathname])
+  return null
+}
+
+export default function App() {
+  return (
+    <>
+      <ScrollToTop />
+      <Navbar />
+      <CartDrawer />
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/shop/:handle" element={<Shop />} />
+          <Route path="/product/:slug" element={<ProductDetail />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/dealer-network" element={<DealerNetwork />} />
+          <Route path="/test-drive" element={<TestDrive />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+      <Footer />
+    </>
+  )
+}
