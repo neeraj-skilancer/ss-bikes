@@ -179,6 +179,6 @@ const VARIANTS = { 1: Showcase, 2: Banner, 3: Minimal, 4: Editorial }
 
 export default function Hero() {
   const [params] = useSearchParams()
-  const Comp = VARIANTS[params.get('hero')] || Banner
+  const Comp = VARIANTS[params.get('hero')] || Showcase
   return <Comp />
 }
