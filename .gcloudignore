@@ -1,0 +1,7 @@
+# Files not needed in the Cloud Build upload (the image is built inside the container)
+.git
+node_modules
+dist
+*.log
+.DS_Store
+.claude
