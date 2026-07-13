@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# secrets — never commit Razorpay keys
+.env
+.env.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
