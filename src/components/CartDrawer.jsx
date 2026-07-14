@@ -36,7 +36,7 @@ export default function CartDrawer() {
           ) : (
             lines.map((l) => (
               <div className="line" key={`${l.slug}-${l.color}`}>
-                <img className="line__img" src={l.product.image} alt={l.product.name} />
+                <img className="line__img" src={l.product.colorImages?.[l.color] || l.product.image} alt={l.product.name} />
                 <div>
                   <div className="line__name">{l.product.name}</div>
                   <div className="line__meta">{l.color}</div>

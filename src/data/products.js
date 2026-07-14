@@ -2,10 +2,12 @@
 // Product specs, prices and imagery are sourced from ssbikes.in (Shopify storefront).
 // Images reference the live Shopify CDN so photography matches the real store.
 
+import heroImg from '../assets/hero.png'
+
 const CDN = 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files'
 
 export const img = {
-  hero: 'https://ssbikes.in/cdn/shop/files/634515138_920420300675452_2599153082670953304_n.png?v=1771790018&width=1920',
+  hero: heroImg,
   lifestyle: `${CDN}/1st_Slide_2_33715fed-400b-4d4b-b54d-6d7907f06624.jpg`,
   monero: `${CDN}/1stSlide_fe55cd5a-866c-46f8-b129-8547a93af5ea.jpg`,
   cosmosClassic: `${CDN}/1st_Slide_5_1.jpg`,
@@ -41,6 +43,12 @@ export const products = [
     badge: 'Bestseller',
     image: img.cosmosStandard,
     colors: ['Black', 'Royal Blue', 'Orange', 'Forest Green'],
+    colorImages: {
+      'Black': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/1st_Slide_5.jpg',
+      'Royal Blue': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide-1_ac504ed4-0844-4b48-bb94-353995a85106.png',
+      'Orange': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_7b55e192-b59e-4972-83d3-d894db6ea12c.jpg',
+      'Forest Green': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_1_3d6e0c03-1a80-42ef-b120-3ade61628148.jpg'
+    },
     range: '35+ km',
     motorW: 250,
     short:
@@ -61,7 +69,10 @@ export const products = [
     compareAt: 33000,
     badge: null,
     image: img.dynamo,
-    colors: ['White', 'Black'],
+    colors: ['White'],
+    colorImages: {
+      'White': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/1st_Slide_3.jpg'
+    },
     range: '35+ km',
     motorW: 250,
     short:
@@ -82,7 +93,12 @@ export const products = [
     compareAt: 44000,
     badge: 'Long range',
     image: img.cosmosClassic,
-    colors: ['Black', 'Grey'],
+    colors: ['Black', 'Gold', 'Silver'],
+    colorImages: {
+      'Black': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/1st_Slide_2_33715fed-400b-4d4b-b54d-6d7907f06624.jpg',
+      'Gold': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide-1_1ac8684c-602a-46e2-ad79-e49550cc767d.png',
+      'Silver': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide-1_96619cdc-807c-4c8e-8cbf-b63631c1f726.png'
+    },
     range: '45+ km',
     motorW: 250,
     short:
@@ -167,6 +183,15 @@ export const products = [
     badge: null,
     image: img.cosmosStandard,
     colors: ['Black', 'Orange', 'Royal Blue', 'Nado Pink', 'Yellow', 'Grey', 'Forest Green'],
+    colorImages: {
+      'Black': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/1st_Slide_5.jpg',
+      'Orange': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_7b55e192-b59e-4972-83d3-d894db6ea12c.jpg',
+      'Royal Blue': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide-1_ac504ed4-0844-4b48-bb94-353995a85106.png',
+      'Nado Pink': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_3239ac49-b0ce-4a44-9b1a-d949987513d5.jpg',
+      'Yellow': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_dcf263b9-8bf7-4772-85bd-8b15c422100d.jpg',
+      'Grey': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_9a9ade9c-be54-4909-9942-c1ec248dbf92.jpg',
+      'Forest Green': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_1_3d6e0c03-1a80-42ef-b120-3ade61628148.jpg'
+    },
     range: '35+ km',
     motorW: 250,
     short:
@@ -188,6 +213,9 @@ export const products = [
     badge: null,
     image: img.dynamo,
     colors: ['White'],
+    colorImages: {
+      'White': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/1st_Slide_3.jpg'
+    },
     range: '35–45+ km',
     motorW: 250,
     short:
@@ -209,6 +237,16 @@ export const products = [
     badge: 'Value',
     image: img.cosmosClassic,
     colors: ['Black', 'Orange', 'Blue', 'Nado Pink', 'Yellow', 'Grey', 'Royal Blue', 'Forest Green'],
+    colorImages: {
+      'Black': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/1st_Slide_5.jpg',
+      'Orange': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_7b55e192-b59e-4972-83d3-d894db6ea12c.jpg',
+      'Blue': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_1_5fe57502-7357-4416-b265-45fd874c8898.jpg',
+      'Nado Pink': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_3239ac49-b0ce-4a44-9b1a-d949987513d5.jpg',
+      'Yellow': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_492662de-8563-47db-bebb-8078a3f0a197.jpg',
+      'Grey': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_1_bfc4672d-6a42-435f-89fa-1e5e4e3f92a4.jpg',
+      'Royal Blue': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide-1_ac504ed4-0844-4b48-bb94-353995a85106.png',
+      'Forest Green': 'https://cdn.shopify.com/s/files/1/0629/3497/4708/files/Slide_1_1_3d6e0c03-1a80-42ef-b120-3ade61628148.jpg'
+    },
     range: '20+ km',
     motorW: 250,
     short:

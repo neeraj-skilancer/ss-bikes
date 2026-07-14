@@ -249,7 +249,7 @@ export default function Checkout() {
           <div className="summary__items">
             {lines.map((l) => (
               <div className="mini-line" key={`${l.slug}-${l.color}`}>
-                <img src={l.product.image} alt={l.product.name} />
+                <img src={l.product.colorImages?.[l.color] || l.product.image} alt={l.product.name} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{l.product.name}</div>
                   <small>

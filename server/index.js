@@ -8,6 +8,12 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const distDir = path.join(__dirname, '..', 'dist')
 
+try {
+  process.loadEnvFile()
+} catch {
+  // Ignore error if .env file is missing, environment variables may be provided directly
+}
+
 const KEY_ID = process.env.RAZORPAY_KEY_ID
 const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET
 const configured = Boolean(KEY_ID && KEY_SECRET)

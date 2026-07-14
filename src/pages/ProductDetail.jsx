@@ -80,7 +80,7 @@ export default function ProductDetail() {
 
       <div className="container pdp">
         <div className="pdp__media">
-          <img src={image} alt={name} />
+          <img src={product.colorImages?.[color] || image} alt={name} />
         </div>
 
         <div>
