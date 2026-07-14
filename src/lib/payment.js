@@ -46,3 +46,16 @@ export async function verifyPayment(payload) {
   })
   return r.json()
 }
+
+// Persists a placed order (COD immediately, online after payment verification)
+// so it shows up in the admin dashboard.
+export async function saveOrder(order) {
+  const r = await fetch('/api/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(order),
+  })
+  const data = await r.json().catch(() => ({}))
+  if (!r.ok) throw new Error(data.error || 'Could not save the order.')
+  return data
+}

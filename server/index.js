@@ -1,9 +1,14 @@
 import express from 'express'
 import compression from 'compression'
+import cookieParser from 'cookie-parser'
 import Razorpay from 'razorpay'
 import crypto from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { seedIfEmpty } from './lib/firestore.js'
+import { adminAuthRouter } from './routes/adminAuth.js'
+import { productsRouter } from './routes/products.js'
+import { ordersRouter } from './routes/orders.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const distDir = path.join(__dirname, '..', 'dist')
@@ -25,6 +30,13 @@ const razorpay = configured ? new Razorpay({ key_id: KEY_ID, key_secret: KEY_SEC
 const app = express()
 app.use(compression())
 app.use(express.json())
+app.use(cookieParser())
+
+// Firestore-backed product catalog, order storage, and admin auth.
+seedIfEmpty()
+app.use('/api/admin', adminAuthRouter) // /api/admin/login, /logout, /me
+app.use('/api', productsRouter) // /api/products, /api/admin/products...
+app.use('/api', ordersRouter) // /api/orders, /api/admin/orders...
 
 // Tells the frontend whether online payment is available + the public key id.
 app.get('/api/config', (_req, res) => {

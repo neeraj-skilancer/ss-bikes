@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { CheckCircle2, MapPin, Clock, Bike } from 'lucide-react'
-import { products } from '../data/products'
-
-const bikes = products.filter((p) => p.category === 'e-bikes')
+import { useProducts } from '../context/ProductsContext'
 
 export default function TestDrive() {
+  const { byCategory } = useProducts()
+  const bikes = byCategory('e-bikes')
   const [sent, setSent] = useState(false)
 
   return (

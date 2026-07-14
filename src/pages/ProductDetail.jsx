@@ -14,9 +14,10 @@ import {
   RotateCcw,
   ArrowRight,
 } from 'lucide-react'
-import { getProduct, formatINR, products } from '../data/products'
+import { formatINR } from '../data/products'
 import { colorHex } from '../lib/colors'
 import { useStore } from '../context/StoreContext'
+import { useProducts } from '../context/ProductsContext'
 import ProductCard from '../components/ProductCard'
 
 // pick an icon per spec key
@@ -43,6 +44,7 @@ const SPEC_META = {
 
 export default function ProductDetail() {
   const { slug } = useParams()
+  const { getProduct, products } = useProducts()
   const product = getProduct(slug)
   const { addToCart } = useStore()
   const [color, setColor] = useState(product?.colors?.[0] || 'Black')

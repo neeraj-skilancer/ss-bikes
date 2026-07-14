@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
-import { byCategory } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
 
 const FILTERS = [
   { handle: 'e-bikes', title: 'E-Bikes' },
@@ -32,6 +32,7 @@ const COPY = {
 }
 
 export default function Shop() {
+  const { byCategory } = useProducts()
   const { handle = 'e-bikes' } = useParams()
   const active = COPY[handle] ? handle : 'e-bikes'
   const [sort, setSort] = useState('featured')
@@ -40,7 +41,7 @@ export default function Shop() {
     const list = [...byCategory(active)]
     const fn = SORTS[sort].fn
     return fn ? list.sort(fn) : list
-  }, [active, sort])
+  }, [active, sort, byCategory])
 
   const copy = COPY[active]
 

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react'
-import { products } from '../data/products'
+import { useProducts } from './ProductsContext'
 
 const StoreContext = createContext(null)
 
@@ -44,6 +44,7 @@ function cartReducer(state, action) {
 }
 
 export function StoreProvider({ children }) {
+  const { products } = useProducts()
   const [cart, dispatch] = useReducer(cartReducer, undefined, loadCart)
   const [cartOpen, setCartOpen] = useState(false)
 
@@ -60,7 +61,7 @@ export function StoreProvider({ children }) {
           return { ...l, product, lineTotal: product.price * l.qty }
         })
         .filter(Boolean),
-    [cart],
+    [cart, products],
   )
 
   const count = lines.reduce((n, l) => n + l.qty, 0)

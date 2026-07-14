@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { CheckCircle2, Lock, ShoppingBag, CreditCard, Banknote, Loader2 } from 'lucide-react'
 import { useStore } from '../context/StoreContext'
 import { formatINR } from '../data/products'
-import { getPaymentConfig, loadRazorpay, createOrder, verifyPayment } from '../lib/payment'
+import { getPaymentConfig, loadRazorpay, createOrder, verifyPayment, saveOrder } from '../lib/payment'
 
 export default function Checkout() {
   const { lines, subtotal, clear, count } = useStore()
@@ -23,6 +23,30 @@ export default function Checkout() {
 
   const shipping = 0
   const total = subtotal + shipping
+
+  function buildOrderPayload(extra) {
+    return {
+      customer: {
+        name: form.name,
+        phone: form.phone,
+        email: form.email,
+        address: form.address,
+        city: form.city,
+        pin: form.pin,
+      },
+      items: lines.map((l) => ({
+        slug: l.slug,
+        name: l.product.name,
+        color: l.color,
+        qty: l.qty,
+        price: l.product.price,
+      })),
+      subtotal,
+      shipping,
+      total,
+      ...extra,
+    }
+  }
 
   useEffect(() => {
     getPaymentConfig().then((c) => {
@@ -59,6 +83,19 @@ export default function Checkout() {
           handler: async (resp) => {
             const result = await verifyPayment(resp)
             if (result.verified) {
+              // Payment is already captured at this point — a failure to save the
+              // order record shouldn't be shown as a payment failure to the customer.
+              try {
+                await saveOrder(
+                  buildOrderPayload({
+                    paymentMethod: 'online',
+                    razorpayOrderId: resp.razorpay_order_id,
+                    razorpayPaymentId: result.paymentId,
+                  }),
+                )
+              } catch (saveErr) {
+                console.error('order save failed after successful payment:', saveErr)
+              }
               clear()
               setPlaced({ method: 'online', paymentId: result.paymentId })
               resolve()
@@ -79,9 +116,18 @@ export default function Checkout() {
     }
   }
 
-  function placeCOD() {
-    clear()
-    setPlaced({ method: 'cod' })
+  async function placeCOD() {
+    setError('')
+    setBusy(true)
+    try {
+      await saveOrder(buildOrderPayload({ paymentMethod: 'cod' }))
+      clear()
+      setPlaced({ method: 'cod' })
+    } catch (e) {
+      setError(e.message || 'Could not place your order. Please try again.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   function onSubmit(e) {

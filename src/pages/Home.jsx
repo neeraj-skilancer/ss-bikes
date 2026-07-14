@@ -12,7 +12,8 @@ import {
 } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
 import Hero from '../components/Hero'
-import { featured, img } from '../data/products'
+import { img } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
 
 const REVIEWS = [
   {
@@ -36,6 +37,7 @@ const REVIEWS = [
 ]
 
 export default function Home() {
+  const { featured } = useProducts()
   return (
     <>
       <Hero />

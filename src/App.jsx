@@ -11,6 +11,11 @@ import DealerNetwork from './pages/DealerNetwork'
 import TestDrive from './pages/TestDrive'
 import Checkout from './pages/Checkout'
 import NotFound from './pages/NotFound'
+import AdminLogin from './pages/admin/AdminLogin'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminProducts from './pages/admin/AdminProducts'
+import AdminOrders from './pages/admin/AdminOrders'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -21,6 +26,25 @@ function ScrollToTop() {
 }
 
 export default function App() {
+  const { pathname } = useLocation()
+  const isAdmin = pathname.startsWith('/admin')
+
+  if (isAdmin) {
+    return (
+      <>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="orders" element={<AdminOrders />} />
+          </Route>
+        </Routes>
+      </>
+    )
+  }
+
   return (
     <>
       <ScrollToTop />

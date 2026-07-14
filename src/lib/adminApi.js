@@ -1,0 +1,44 @@
+// Admin API client — all calls include cookies so the signed session cookie
+// set by /api/admin/login is sent along automatically.
+
+async function call(path, opts = {}) {
+  const r = await fetch(path, {
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+    ...opts,
+  })
+  const data = await r.json().catch(() => ({}))
+  if (!r.ok) throw new Error(data.error || `Request failed (${r.status})`)
+  return data
+}
+
+export const adminLogin = (password) =>
+  call('/api/admin/login', { method: 'POST', body: JSON.stringify({ password }) })
+
+export const adminLogout = () => call('/api/admin/logout', { method: 'POST' })
+
+export const adminMe = () => call('/api/admin/me')
+
+export const adminListProducts = () => call('/api/admin/products')
+
+export const adminCreateProduct = (product) =>
+  call('/api/admin/products', { method: 'POST', body: JSON.stringify(product) })
+
+export const adminUpdateProduct = (slug, product) =>
+  call(`/api/admin/products/${encodeURIComponent(slug)}`, {
+    method: 'PUT',
+    body: JSON.stringify(product),
+  })
+
+export const adminDeleteProduct = (slug) =>
+  call(`/api/admin/products/${encodeURIComponent(slug)}`, { method: 'DELETE' })
+
+export const adminListOrders = () => call('/api/admin/orders')
+
+export const adminUpdateOrderStatus = (id, status) =>
+  call(`/api/admin/orders/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })
+
+export const adminStats = () => call('/api/admin/stats')
