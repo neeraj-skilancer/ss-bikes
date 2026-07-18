@@ -24,6 +24,8 @@ const EMPTY = {
   specsText: '',
   soldOut: false,
   active: true,
+  amazonUrl: '',
+  flipkartUrl: '',
 }
 
 // "key: value" per line <-> { key: value }
@@ -58,6 +60,8 @@ function productToForm(p) {
     specsText: specsToText(p.specs),
     soldOut: Boolean(p.soldOut),
     active: p.active !== false,
+    amazonUrl: p.amazonUrl || '',
+    flipkartUrl: p.flipkartUrl || '',
   }
 }
 
@@ -81,6 +85,8 @@ function formToPayload(form) {
     specs: textToSpecs(form.specsText),
     soldOut: form.soldOut,
     active: form.active,
+    amazonUrl: form.amazonUrl.trim() || null,
+    flipkartUrl: form.flipkartUrl.trim() || null,
   }
 }
 
@@ -271,6 +277,23 @@ export default function AdminProducts() {
                   placeholder={'motor: 250W BLDC hub motor\nbattery: 36V / 7.8Ah Li-ion'}
                 />
               </div>
+              <div className="input">
+                <label>Amazon listing URL (optional)</label>
+                <input
+                  value={editing.amazonUrl}
+                  onChange={set('amazonUrl')}
+                  placeholder="https://www.amazon.in/…"
+                />
+              </div>
+              <div className="input">
+                <label>Flipkart listing URL (optional)</label>
+                <input
+                  value={editing.flipkartUrl}
+                  onChange={set('flipkartUrl')}
+                  placeholder="https://www.flipkart.com/…"
+                />
+              </div>
+
               <div className="input">
                 <label className="admin-checkbox">
                   <input type="checkbox" checked={editing.soldOut} onChange={set('soldOut')} />

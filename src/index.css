@@ -2520,3 +2520,48 @@ ul {
   border: 1.5px solid var(--line);
   border-radius: 8px;
 }
+
+/* Marketplace buy buttons (Amazon / Flipkart) */
+.pdp__marketplaces {
+  margin: 4px 0 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.pdp__marketplaces-label {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.pdp__marketplaces-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.marketplace-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  font-size: 0.86rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.marketplace-btn--amazon:hover {
+  border-color: #ff9900;
+  background: #fff8ef;
+}
+
+.marketplace-btn--flipkart:hover {
+  border-color: #2874f0;
+  background: #eff4fe;
+}

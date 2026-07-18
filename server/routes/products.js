@@ -76,6 +76,8 @@ productsRouter.post('/admin/products', requireAdmin, async (req, res) => {
       specs: body.specs && typeof body.specs === 'object' ? body.specs : {},
       soldOut: Boolean(body.soldOut),
       active: body.active !== false,
+      amazonUrl: body.amazonUrl || null,
+      flipkartUrl: body.flipkartUrl || null,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     }
@@ -107,6 +109,8 @@ productsRouter.put('/admin/products/:slug', requireAdmin, async (req, res) => {
     if (body.specs !== undefined) update.specs = body.specs || {}
     if (body.soldOut !== undefined) update.soldOut = Boolean(body.soldOut)
     if (body.active !== undefined) update.active = Boolean(body.active)
+    if (body.amazonUrl !== undefined) update.amazonUrl = body.amazonUrl || null
+    if (body.flipkartUrl !== undefined) update.flipkartUrl = body.flipkartUrl || null
 
     await ref.update(update)
     const fresh = await ref.get()

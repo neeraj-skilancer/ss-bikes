@@ -13,6 +13,7 @@ import {
   Truck,
   RotateCcw,
   ArrowRight,
+  ExternalLink,
 } from 'lucide-react'
 import { formatINR } from '../data/products'
 import { colorHex } from '../lib/colors'
@@ -130,6 +131,34 @@ export default function ProductDetail() {
               Test ride
             </Link>
           </div>
+
+          {(product.amazonUrl || product.flipkartUrl) && (
+            <div className="pdp__marketplaces">
+              <span className="pdp__marketplaces-label">Also available on</span>
+              <div className="pdp__marketplaces-links">
+                {product.amazonUrl && (
+                  <a
+                    href={product.amazonUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="marketplace-btn marketplace-btn--amazon"
+                  >
+                    Buy on Amazon <ExternalLink size={13} />
+                  </a>
+                )}
+                {product.flipkartUrl && (
+                  <a
+                    href={product.flipkartUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="marketplace-btn marketplace-btn--flipkart"
+                  >
+                    Buy on Flipkart <ExternalLink size={13} />
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="specs-grid">
             {Object.entries(specs).map(([k, v]) => {
