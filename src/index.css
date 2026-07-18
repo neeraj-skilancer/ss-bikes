@@ -2521,6 +2521,60 @@ ul {
   border-radius: 8px;
 }
 
+/* Dedicated dealer-products page */
+.admin__back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.admin__back-link:hover {
+  color: var(--ink);
+}
+
+.dealer-products__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--paper);
+  color: var(--muted);
+}
+
+.dealer-products__search input {
+  border: none;
+  outline: none;
+  font-size: 0.88rem;
+  min-width: 200px;
+  background: transparent;
+  color: var(--ink);
+}
+
+.dealer-product-picker--page {
+  max-height: none;
+}
+
+.dealer-product-picker__label {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 260px;
+}
+
+.dealer-product-picker__thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--soft);
+  flex-shrink: 0;
+}
+
 /* Marketplace buy buttons (Amazon / Flipkart) */
 .pdp__marketplaces {
   margin: 4px 0 26px;

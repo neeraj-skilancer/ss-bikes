@@ -127,6 +127,17 @@ dealerStoresRouter.get('/admin/dealer-stores', requireAdmin, async (_req, res) =
   }
 })
 
+dealerStoresRouter.get('/admin/dealer-stores/:slug', requireAdmin, async (req, res) => {
+  try {
+    const doc = await db.collection('dealerStores').doc(req.params.slug).get()
+    if (!doc.exists) return res.status(404).json({ error: 'Dealer not found.' })
+    res.json({ dealer: docToDealer(doc) })
+  } catch (err) {
+    console.error('GET /admin/dealer-stores/:slug error:', err?.message || err)
+    res.status(500).json({ error: 'Could not load dealer.' })
+  }
+})
+
 dealerStoresRouter.post('/admin/dealer-stores', requireAdmin, async (req, res) => {
   try {
     const body = req.body || {}
@@ -152,11 +163,32 @@ dealerStoresRouter.post('/admin/dealer-stores', requireAdmin, async (req, res) =
   }
 })
 
+// Partial update: only fields present in the body are touched. This lets the
+// dealer-info form and the dedicated dealer-products screen each save
+// independently without clobbering fields the other one owns.
 dealerStoresRouter.put('/admin/dealer-stores/:slug', requireAdmin, async (req, res) => {
   try {
     const ref = db.collection('dealerStores').doc(req.params.slug)
     if (!(await ref.get()).exists) return res.status(404).json({ error: 'Dealer not found.' })
-    const update = { ...buildDealerPayload(req.body || {}), updatedAt: FieldValue.serverTimestamp() }
+
+    const body = req.body || {}
+    const update = { updatedAt: FieldValue.serverTimestamp() }
+    const stringFields = ['name', 'tagline', 'city', 'state', 'address', 'phone', 'email', 'logo']
+    for (const f of stringFields) if (body[f] !== undefined) update[f] = body[f]
+    if (body.pincodes !== undefined || body.pincodesText !== undefined) {
+      update.pincodes = Array.isArray(body.pincodes) ? body.pincodes : splitList(body.pincodesText)
+    }
+    if (body.active !== undefined) update.active = Boolean(body.active)
+    if (body.products !== undefined) {
+      update.products = Array.isArray(body.products)
+        ? body.products.map((p) => ({
+            slug: p.slug,
+            priceOverride: p.priceOverride != null && p.priceOverride !== '' ? Number(p.priceOverride) : null,
+            stock: p.stock != null && p.stock !== '' ? Number(p.stock) : null,
+          }))
+        : []
+    }
+
     await ref.update(update)
     const fresh = await ref.get()
     res.json({ dealer: docToDealer(fresh) })

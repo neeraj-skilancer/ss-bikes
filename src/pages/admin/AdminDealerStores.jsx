@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Loader2, X, ExternalLink } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Plus, Pencil, Trash2, Loader2, X, ExternalLink, Package } from 'lucide-react'
 import {
   adminListDealerStores,
   adminCreateDealerStore,
   adminUpdateDealerStore,
   adminDeleteDealerStore,
-  adminListProducts,
 } from '../../lib/adminApi'
 
 const EMPTY = {
@@ -20,11 +20,9 @@ const EMPTY = {
   email: '',
   logo: '',
   active: true,
-  products: [], // [{ slug, priceOverride, stock, selected }]
 }
 
-function dealerToForm(d, catalog) {
-  const selectedSlugs = new Map((d.products || []).map((p) => [p.slug, p]))
+function dealerToForm(d) {
   return {
     slug: d.slug,
     name: d.name || '',
@@ -37,16 +35,6 @@ function dealerToForm(d, catalog) {
     email: d.email || '',
     logo: d.logo || '',
     active: d.active !== false,
-    products: catalog.map((p) => {
-      const sel = selectedSlugs.get(p.slug)
-      return {
-        slug: p.slug,
-        name: p.name,
-        selected: Boolean(sel),
-        priceOverride: sel?.priceOverride ?? '',
-        stock: sel?.stock ?? '',
-      }
-    }),
   }
 }
 
@@ -63,30 +51,19 @@ function formToPayload(form) {
     email: form.email,
     logo: form.logo,
     active: form.active,
-    products: form.products
-      .filter((p) => p.selected)
-      .map((p) => ({
-        slug: p.slug,
-        priceOverride: p.priceOverride === '' ? null : Number(p.priceOverride),
-        stock: p.stock === '' ? null : Number(p.stock),
-      })),
   }
 }
 
 export default function AdminDealerStores() {
   const [dealers, setDealers] = useState(null)
-  const [catalog, setCatalog] = useState([])
   const [error, setError] = useState('')
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
   const [deletingSlug, setDeletingSlug] = useState(null)
 
   function load() {
-    Promise.all([adminListDealerStores(), adminListProducts()])
-      .then(([d, p]) => {
-        setDealers(d.dealers)
-        setCatalog(p.products.filter((x) => x.active !== false))
-      })
+    adminListDealerStores()
+      .then((r) => setDealers(r.dealers))
       .catch((e) => setError(e.message || 'Could not load dealer stores.'))
   }
 
@@ -130,21 +107,6 @@ export default function AdminDealerStores() {
     setEditing((f) => ({ ...f, [k]: v }))
   }
 
-  const toggleProduct = (slug) => {
-    setEditing((f) => ({
-      ...f,
-      products: f.products.map((p) => (p.slug === slug ? { ...p, selected: !p.selected } : p)),
-    }))
-  }
-
-  const setProductField = (slug, field) => (e) => {
-    const v = e.target.value
-    setEditing((f) => ({
-      ...f,
-      products: f.products.map((p) => (p.slug === slug ? { ...p, [field]: v } : p)),
-    }))
-  }
-
   return (
     <div>
       <div className="admin__head admin__head--row">
@@ -152,10 +114,7 @@ export default function AdminDealerStores() {
           <h1>Dealer Stores</h1>
           <p>{dealers ? `${dealers.length} dealer stores` : 'Loading…'}</p>
         </div>
-        <button
-          className="btn btn--primary"
-          onClick={() => setEditing(dealerToForm({ ...EMPTY, slug: '' }, catalog))}
-        >
+        <button className="btn btn--primary" onClick={() => setEditing({ ...EMPTY })}>
           <Plus size={16} /> Add dealer store
         </button>
       </div>
@@ -200,6 +159,14 @@ export default function AdminDealerStores() {
                 )}
               </span>
               <span className="admin-table__actions">
+                <Link
+                  className="icon-btn"
+                  to={`/admin/dealer-stores/${d.slug}/products`}
+                  aria-label="Manage products"
+                  title="Manage products"
+                >
+                  <Package size={16} />
+                </Link>
                 <a
                   className="icon-btn"
                   href={`/dealers/${d.slug}`}
@@ -209,11 +176,7 @@ export default function AdminDealerStores() {
                 >
                   <ExternalLink size={16} />
                 </a>
-                <button
-                  className="icon-btn"
-                  onClick={() => setEditing(dealerToForm(d, catalog))}
-                  aria-label="Edit"
-                >
+                <button className="icon-btn" onClick={() => setEditing(dealerToForm(d))} aria-label="Edit">
                   <Pencil size={16} />
                 </button>
                 <button
@@ -232,7 +195,7 @@ export default function AdminDealerStores() {
 
       {editing && (
         <div className="admin-modal-overlay" onClick={() => !saving && setEditing(null)}>
-          <div className="admin-modal admin-modal--wide" onClick={(e) => e.stopPropagation()}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal__head">
               <h3>{editing.slug ? `Edit ${editing.name}` : 'Add dealer store'}</h3>
               <button className="icon-btn" onClick={() => setEditing(null)} aria-label="Close">
@@ -289,39 +252,13 @@ export default function AdminDealerStores() {
                 </label>
               </div>
 
-              <div className="input full">
-                <div className="field__label">
-                  Products offered ({editing.products.filter((p) => p.selected).length} selected)
+              {!editing.slug && (
+                <div className="input full">
+                  <div className="notice">
+                    You'll be able to pick which products this dealer sells right after saving.
+                  </div>
                 </div>
-                <div className="dealer-product-picker">
-                  {editing.products.map((p) => (
-                    <div className="dealer-product-picker__row" key={p.slug}>
-                      <label className="admin-checkbox">
-                        <input type="checkbox" checked={p.selected} onChange={() => toggleProduct(p.slug)} />
-                        {p.name}
-                      </label>
-                      {p.selected && (
-                        <div className="dealer-product-picker__fields">
-                          <input
-                            type="number"
-                            min="0"
-                            placeholder="Price override"
-                            value={p.priceOverride}
-                            onChange={setProductField(p.slug, 'priceOverride')}
-                          />
-                          <input
-                            type="number"
-                            min="0"
-                            placeholder="Stock"
-                            value={p.stock}
-                            onChange={setProductField(p.slug, 'stock')}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              )}
 
               <div className="input full admin-modal__foot">
                 <button type="button" className="btn btn--ghost" onClick={() => setEditing(null)}>

@@ -53,6 +53,8 @@ export const adminUpdateDealerApplicationStatus = (id, status) =>
 
 export const adminListDealerStores = () => call('/api/admin/dealer-stores')
 
+export const adminGetDealerStore = (slug) => call(`/api/admin/dealer-stores/${encodeURIComponent(slug)}`)
+
 export const adminCreateDealerStore = (dealer) =>
   call('/api/admin/dealer-stores', { method: 'POST', body: JSON.stringify(dealer) })
 
