@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { CheckCircle2, TrendingUp, MapPin, HeadphonesIcon, Handshake, Loader2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { CheckCircle2, TrendingUp, MapPin, HeadphonesIcon, Handshake, Loader2, Store } from 'lucide-react'
 import { submitDealerApplication } from '../lib/dealers'
 
 const BENEFITS = [
@@ -67,6 +68,9 @@ export default function DealerNetwork() {
             Bring clean, affordable electric mobility to your city. Become an authorised SS Bikes
             dealer and grow with India's e-cycle revolution.
           </p>
+          <Link to="/dealers" className="btn btn--ghost" style={{ marginTop: 16 }}>
+            <Store size={16} /> Already a customer? Browse dealer stores near you
+          </Link>
         </div>
       </section>
 

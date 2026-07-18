@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { db, FieldValue } from '../lib/firestore.js'
 import { requireAdmin } from '../lib/adminAuth.js'
+import { getActiveDealerBySlug } from './dealerStores.js'
 
 export const ordersRouter = Router()
 
@@ -19,8 +20,17 @@ function docToOrder(doc) {
 // ---- Public: created by the checkout flow (COD immediately, online after payment verification) ----
 ordersRouter.post('/orders', async (req, res) => {
   try {
-    const { customer, items, subtotal, shipping = 0, total, paymentMethod, razorpayOrderId, razorpayPaymentId } =
-      req.body || {}
+    const {
+      customer,
+      items,
+      subtotal,
+      shipping = 0,
+      total,
+      paymentMethod,
+      razorpayOrderId,
+      razorpayPaymentId,
+      dealerSlug,
+    } = req.body || {}
 
     if (!customer?.name || !customer?.phone || !customer?.address) {
       return res.status(400).json({ error: 'Missing customer details.' })
@@ -37,7 +47,30 @@ ordersRouter.post('/orders', async (req, res) => {
       return res.status(400).json({ error: 'Online orders require a verified payment.' })
     }
 
+    // Dealer-scoped checkout: re-validate everything server-side — never trust
+    // the client for pincode eligibility or which products a dealer sells.
+    let dealerInfo = null
+    if (dealerSlug) {
+      const dealer = await getActiveDealerBySlug(String(dealerSlug))
+      if (!dealer) {
+        return res.status(400).json({ error: 'This dealer is not currently available.' })
+      }
+      const pin = String(customer.pin || '')
+      if (!dealer.pincodes?.includes(pin)) {
+        return res.status(400).json({
+          error: `This dealer only delivers within pincode${dealer.pincodes?.length > 1 ? 's' : ''}: ${(dealer.pincodes || []).join(', ')}.`,
+        })
+      }
+      const dealerSlugs = new Set((dealer.products || []).map((p) => p.slug))
+      const invalidItem = items.find((it) => !dealerSlugs.has(it.slug))
+      if (invalidItem) {
+        return res.status(400).json({ error: `"${invalidItem.name}" is not offered by this dealer.` })
+      }
+      dealerInfo = { dealerSlug: dealer.slug, dealerName: dealer.name }
+    }
+
     const order = {
+      ...(dealerInfo || {}),
       customer: {
         name: String(customer.name),
         phone: String(customer.phone),
@@ -103,10 +136,11 @@ ordersRouter.patch('/admin/orders/:id', requireAdmin, async (req, res) => {
 
 ordersRouter.get('/admin/stats', requireAdmin, async (_req, res) => {
   try {
-    const [ordersSnap, productsSnap, dealerAppsSnap] = await Promise.all([
+    const [ordersSnap, productsSnap, dealerAppsSnap, dealerStoresSnap] = await Promise.all([
       db.collection('orders').get(),
       db.collection('products').get(),
       db.collection('dealerApplications').get(),
+      db.collection('dealerStores').get(),
     ])
 
     let revenue = 0
@@ -126,6 +160,7 @@ ordersRouter.get('/admin/stats', requireAdmin, async (_req, res) => {
       byStatus,
       totalDealerApplications: dealerAppsSnap.size,
       newDealerApplications,
+      totalDealerStores: dealerStoresSnap.docs.filter((d) => d.data().active !== false).length,
     })
   } catch (err) {
     console.error('GET /admin/stats error:', err?.message || err)

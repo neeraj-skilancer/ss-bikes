@@ -9,6 +9,8 @@ import Shop from './pages/Shop'
 import ProductDetail from './pages/ProductDetail'
 import About from './pages/About'
 import DealerNetwork from './pages/DealerNetwork'
+import DealerDirectory from './pages/DealerDirectory'
+import DealerStorefront from './pages/DealerStorefront'
 import TestDrive from './pages/TestDrive'
 import Checkout from './pages/Checkout'
 import NotFound from './pages/NotFound'
@@ -18,6 +20,7 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminProducts from './pages/admin/AdminProducts'
 import AdminOrders from './pages/admin/AdminOrders'
 import AdminDealers from './pages/admin/AdminDealers'
+import AdminDealerStores from './pages/admin/AdminDealerStores'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -43,6 +46,7 @@ export default function App() {
             <Route path="products" element={<AdminProducts />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="dealers" element={<AdminDealers />} />
+            <Route path="dealer-stores" element={<AdminDealerStores />} />
           </Route>
         </Routes>
       </>
@@ -62,6 +66,8 @@ export default function App() {
           <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/dealer-network" element={<DealerNetwork />} />
+          <Route path="/dealers" element={<DealerDirectory />} />
+          <Route path="/dealers/:slug" element={<DealerStorefront />} />
           <Route path="/test-drive" element={<TestDrive />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="*" element={<NotFound />} />

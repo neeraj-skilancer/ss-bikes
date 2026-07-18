@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CheckCircle2, Lock, ShoppingBag, CreditCard, Banknote, Loader2 } from 'lucide-react'
+import { CheckCircle2, Lock, ShoppingBag, CreditCard, Banknote, Loader2, Store } from 'lucide-react'
 import { useStore } from '../context/StoreContext'
 import { formatINR } from '../data/products'
 import { getPaymentConfig, loadRazorpay, createOrder, verifyPayment, saveOrder } from '../lib/payment'
+import { fetchDealer } from '../lib/dealerStores'
 
 export default function Checkout() {
-  const { lines, subtotal, clear, count } = useStore()
+  const { lines, subtotal, clear, count, dealer } = useStore()
   const [placed, setPlaced] = useState(null) // { method, paymentId? }
   const [method, setMethod] = useState('online')
   const [rzpEnabled, setRzpEnabled] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [dealerInfo, setDealerInfo] = useState(null)
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -23,6 +25,19 @@ export default function Checkout() {
 
   const shipping = 0
   const total = subtotal + shipping
+
+  useEffect(() => {
+    if (!dealer?.slug) {
+      setDealerInfo(null)
+      return
+    }
+    fetchDealer(dealer.slug)
+      .then((d) => setDealerInfo(d.dealer))
+      .catch(() => setDealerInfo(null))
+  }, [dealer?.slug])
+
+  const dealerPincodes = dealerInfo?.pincodes || []
+  const pinMatchesDealer = !dealer || dealerPincodes.length === 0 || dealerPincodes.includes(form.pin)
 
   function buildOrderPayload(extra) {
     return {
@@ -44,6 +59,7 @@ export default function Checkout() {
       subtotal,
       shipping,
       total,
+      ...(dealer?.slug ? { dealerSlug: dealer.slug } : {}),
       ...extra,
     }
   }
@@ -57,7 +73,8 @@ export default function Checkout() {
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
-  const formValid = form.name && form.phone && form.email && form.address && form.city && form.pin
+  const formValid =
+    form.name && form.phone && form.email && form.address && form.city && form.pin && pinMatchesDealer
 
   async function payWithRazorpay() {
     setError('')
@@ -190,6 +207,17 @@ export default function Checkout() {
         <div className="container">
           <span className="eyebrow">Secure checkout</span>
           <h1>Checkout</h1>
+          {dealer && (
+            <div className="notice" style={{ marginTop: 14, display: 'inline-flex' }}>
+              <Store size={16} /> Ordering from <b style={{ margin: '0 4px' }}>{dealer.name}</b>
+              {dealerPincodes.length > 0 && (
+                <>
+                  — delivers only to pincode{dealerPincodes.length > 1 ? 's' : ''}:{' '}
+                  <b style={{ marginLeft: 4 }}>{dealerPincodes.join(', ')}</b>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
@@ -221,6 +249,11 @@ export default function Checkout() {
               <div className="input">
                 <label>PIN code</label>
                 <input required value={form.pin} onChange={set('pin')} placeholder="000000" />
+                {dealer && form.pin && !pinMatchesDealer && (
+                  <span style={{ color: 'var(--danger)', fontSize: '0.78rem' }}>
+                    {dealer.name} doesn't deliver to this pincode.
+                  </span>
+                )}
               </div>
 
               <div className="input full" style={{ marginTop: 8 }}>

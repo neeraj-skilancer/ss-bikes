@@ -2199,6 +2199,10 @@ ul {
   grid-template-columns: 1.2fr 1fr 1.2fr 1fr 140px 40px;
 }
 
+.admin-table__row--orders {
+  grid-template-columns: 80px 1.1fr 0.9fr 0.9fr 0.8fr 1fr 140px 40px;
+}
+
 .admin-table__row:last-child {
   border-bottom: none;
 }
@@ -2408,7 +2412,8 @@ ul {
   }
   .admin-table__row,
   .admin-table__row--products,
-  .admin-table__row--dealers {
+  .admin-table__row--dealers,
+  .admin-table__row--orders {
     grid-template-columns: 1fr;
     gap: 4px;
   }
@@ -2418,4 +2423,100 @@ ul {
   .admin-order-detail {
     grid-template-columns: 1fr;
   }
+}
+
+/* ================= Dealer storefronts ================= */
+
+.dealer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 18px;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+}
+
+.dealer-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dealer-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.dealer-card__logo {
+  aspect-ratio: 16 / 9;
+  background: var(--soft);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.dealer-card__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.drawer__dealer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: var(--soft);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+
+.drawer__dealer svg {
+  color: var(--accent-strong);
+  flex-shrink: 0;
+}
+
+/* Admin: dealer product picker */
+.admin-modal--wide {
+  max-width: 780px;
+}
+
+.dealer-product-picker {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.dealer-product-picker__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.dealer-product-picker__row:last-child {
+  border-bottom: none;
+}
+
+.dealer-product-picker__row .admin-checkbox {
+  margin-top: 0;
+  font-size: 0.88rem;
+}
+
+.dealer-product-picker__fields {
+  display: flex;
+  gap: 8px;
+}
+
+.dealer-product-picker__fields input {
+  width: 120px;
+  font-size: 0.82rem;
+  padding: 6px 9px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
 }

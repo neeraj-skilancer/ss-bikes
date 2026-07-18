@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom'
-import { X, Plus, Minus, ShoppingBag } from 'lucide-react'
+import { X, Plus, Minus, ShoppingBag, Store } from 'lucide-react'
 import { useStore } from '../context/StoreContext'
 import { formatINR } from '../data/products'
 
 export default function CartDrawer() {
-  const { cartOpen, setCartOpen, lines, subtotal, setQty, remove, count } = useStore()
+  const { cartOpen, setCartOpen, lines, subtotal, setQty, remove, count, dealer } = useStore()
   const navigate = useNavigate()
 
   const goCheckout = () => {
@@ -26,6 +26,12 @@ export default function CartDrawer() {
             <X size={20} />
           </button>
         </div>
+
+        {dealer && (
+          <div className="drawer__dealer">
+            <Store size={14} /> Shopping from <b>{dealer.name}</b>
+          </div>
+        )}
 
         <div className="drawer__body">
           {lines.length === 0 ? (

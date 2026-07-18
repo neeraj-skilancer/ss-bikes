@@ -58,7 +58,8 @@ export default function Footer() {
           <div>
             <h4>Company</h4>
             <Link to="/about">About Us</Link>
-            <Link to="/dealer-network">Dealer Network</Link>
+            <Link to="/dealers">Find a Dealer</Link>
+            <Link to="/dealer-network">Become a Dealer</Link>
             <Link to="/about">Our Mission</Link>
             <a href="mailto:support@ssbikes.in">Support</a>
           </div>

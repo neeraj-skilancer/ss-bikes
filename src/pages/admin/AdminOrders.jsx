@@ -80,24 +80,32 @@ export default function AdminOrders() {
 
       {orders && visible.length > 0 && (
         <div className="admin-table">
-          <div className="admin-table__row admin-table__row--head">
+          <div className="admin-table__row admin-table__row--head admin-table__row--orders">
             <span>Order</span>
             <span>Customer</span>
             <span>Items</span>
             <span>Total</span>
             <span>Payment</span>
+            <span>Source</span>
             <span>Status</span>
             <span></span>
           </div>
           {visible.map((o) => (
             <div key={o.id}>
-              <div className="admin-table__row">
+              <div className="admin-table__row admin-table__row--orders">
                 <span className="admin-table__mono">{o.id.slice(0, 8)}</span>
                 <span>{o.customer?.name}</span>
                 <span>{o.items?.reduce((n, it) => n + it.qty, 0)} item(s)</span>
                 <span>{formatINR(o.total)}</span>
                 <span className={`tag ${o.paymentMethod === 'online' ? 'tag--green' : 'tag--amber'}`}>
                   {o.paymentMethod === 'online' ? 'Online' : 'COD'}
+                </span>
+                <span>
+                  {o.dealerName ? (
+                    <span className="tag tag--blue">{o.dealerName}</span>
+                  ) : (
+                    <span style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>SS Bikes</span>
+                  )}
                 </span>
                 <span>
                   <select
@@ -153,6 +161,7 @@ export default function AdminOrders() {
                     <h4>Meta</h4>
                     <p>Placed: {fmtDate(o.createdAt)}</p>
                     <p>Payment status: {o.paymentStatus}</p>
+                    {o.dealerName && <p>Dealer: {o.dealerName}</p>}
                     {o.razorpayPaymentId && <p>Payment ID: {o.razorpayPaymentId}</p>}
                   </div>
                 </div>

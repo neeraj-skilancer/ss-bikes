@@ -50,3 +50,17 @@ export const adminUpdateDealerApplicationStatus = (id, status) =>
     method: 'PATCH',
     body: JSON.stringify({ status }),
   })
+
+export const adminListDealerStores = () => call('/api/admin/dealer-stores')
+
+export const adminCreateDealerStore = (dealer) =>
+  call('/api/admin/dealer-stores', { method: 'POST', body: JSON.stringify(dealer) })
+
+export const adminUpdateDealerStore = (slug, dealer) =>
+  call(`/api/admin/dealer-stores/${encodeURIComponent(slug)}`, {
+    method: 'PUT',
+    body: JSON.stringify(dealer),
+  })
+
+export const adminDeleteDealerStore = (slug) =>
+  call(`/api/admin/dealer-stores/${encodeURIComponent(slug)}`, { method: 'DELETE' })

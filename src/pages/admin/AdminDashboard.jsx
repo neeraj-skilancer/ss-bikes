@@ -9,6 +9,7 @@ import {
   XCircle,
   Loader2,
   Handshake,
+  Store,
 } from 'lucide-react'
 import { adminStats } from '../../lib/adminApi'
 import { formatINR } from '../../data/products'
@@ -84,6 +85,15 @@ export default function AdminDashboard() {
                 <span>Dealer applications</span>
               </div>
             </div>
+            <div className="admin-stat">
+              <div className="admin-stat__ico admin-stat__ico--green">
+                <Store size={18} />
+              </div>
+              <div>
+                <b>{stats.totalDealerStores}</b>
+                <span>Live dealer stores</span>
+              </div>
+            </div>
           </div>
 
           <div className="admin__head" style={{ marginTop: 34 }}>
@@ -134,6 +144,9 @@ export default function AdminDashboard() {
             </Link>
             <Link to="/admin/products" className="btn btn--ghost">
               Manage products
+            </Link>
+            <Link to="/admin/dealer-stores" className="btn btn--ghost">
+              Manage dealer stores
             </Link>
             <Link to="/admin/dealers" className="btn btn--ghost">
               View dealer applications

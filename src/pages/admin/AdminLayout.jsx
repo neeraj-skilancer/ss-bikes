@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Navigate, Outlet, Link } from 'react-router-dom'
-import { LayoutDashboard, Package, ClipboardList, Handshake, LogOut, Loader2, ExternalLink } from 'lucide-react'
+import {
+  LayoutDashboard,
+  Package,
+  ClipboardList,
+  Handshake,
+  Store,
+  LogOut,
+  Loader2,
+  ExternalLink,
+} from 'lucide-react'
 import { adminMe, adminLogout } from '../../lib/adminApi'
 
 export default function AdminLayout() {
@@ -36,8 +45,11 @@ export default function AdminLayout() {
           <NavLink to="/admin/orders">
             <ClipboardList size={17} /> Orders
           </NavLink>
+          <NavLink to="/admin/dealer-stores">
+            <Store size={17} /> Dealer Stores
+          </NavLink>
           <NavLink to="/admin/dealers">
-            <Handshake size={17} /> Dealers
+            <Handshake size={17} /> Applications
           </NavLink>
         </nav>
         <div className="admin__sidebar-foot">
