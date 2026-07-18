@@ -60,8 +60,7 @@ export default function AdminLayout() {
             className="admin__logout"
             onClick={async () => {
               await adminLogout()
-              window.location.hash = '#/admin/login'
-              window.location.reload()
+              window.location.href = '/admin/login'
             }}
           >
             <LogOut size={15} /> Log out

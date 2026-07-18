@@ -202,7 +202,7 @@ export default function AdminDealerStores() {
               <span className="admin-table__actions">
                 <a
                   className="icon-btn"
-                  href={`#/dealers/${d.slug}`}
+                  href={`/dealers/${d.slug}`}
                   target="_blank"
                   rel="noreferrer"
                   aria-label="View storefront"
