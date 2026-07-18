@@ -9,6 +9,7 @@ import { seedIfEmpty } from './lib/firestore.js'
 import { adminAuthRouter } from './routes/adminAuth.js'
 import { productsRouter } from './routes/products.js'
 import { ordersRouter } from './routes/orders.js'
+import { dealersRouter } from './routes/dealers.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const distDir = path.join(__dirname, '..', 'dist')
@@ -37,6 +38,7 @@ seedIfEmpty()
 app.use('/api/admin', adminAuthRouter) // /api/admin/login, /logout, /me
 app.use('/api', productsRouter) // /api/products, /api/admin/products...
 app.use('/api', ordersRouter) // /api/orders, /api/admin/orders...
+app.use('/api', dealersRouter) // /api/dealer-applications, /api/admin/dealer-applications...
 
 // Tells the frontend whether online payment is available + the public key id.
 app.get('/api/config', (_req, res) => {

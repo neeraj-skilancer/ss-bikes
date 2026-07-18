@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { IndianRupee, ClipboardList, Package, Truck, PackageCheck, XCircle, Loader2 } from 'lucide-react'
+import {
+  IndianRupee,
+  ClipboardList,
+  Package,
+  Truck,
+  PackageCheck,
+  XCircle,
+  Loader2,
+  Handshake,
+} from 'lucide-react'
 import { adminStats } from '../../lib/adminApi'
 import { formatINR } from '../../data/products'
 
@@ -59,6 +68,22 @@ export default function AdminDashboard() {
                 <span>Products in catalog</span>
               </div>
             </div>
+            <div className="admin-stat">
+              <div className="admin-stat__ico admin-stat__ico--blue">
+                <Handshake size={18} />
+              </div>
+              <div>
+                <b>
+                  {stats.totalDealerApplications}
+                  {stats.newDealerApplications > 0 && (
+                    <span className="tag tag--blue" style={{ marginLeft: 8, verticalAlign: 'middle' }}>
+                      {stats.newDealerApplications} new
+                    </span>
+                  )}
+                </b>
+                <span>Dealer applications</span>
+              </div>
+            </div>
           </div>
 
           <div className="admin__head" style={{ marginTop: 34 }}>
@@ -109,6 +134,9 @@ export default function AdminDashboard() {
             </Link>
             <Link to="/admin/products" className="btn btn--ghost">
               Manage products
+            </Link>
+            <Link to="/admin/dealers" className="btn btn--ghost">
+              View dealer applications
             </Link>
           </div>
         </>

@@ -103,9 +103,10 @@ ordersRouter.patch('/admin/orders/:id', requireAdmin, async (req, res) => {
 
 ordersRouter.get('/admin/stats', requireAdmin, async (_req, res) => {
   try {
-    const [ordersSnap, productsSnap] = await Promise.all([
+    const [ordersSnap, productsSnap, dealerAppsSnap] = await Promise.all([
       db.collection('orders').get(),
       db.collection('products').get(),
+      db.collection('dealerApplications').get(),
     ])
 
     let revenue = 0
@@ -116,11 +117,15 @@ ordersRouter.get('/admin/stats', requireAdmin, async (_req, res) => {
       if (o.status !== 'Cancelled') revenue += Number(o.total) || 0
     }
 
+    const newDealerApplications = dealerAppsSnap.docs.filter((d) => d.data().status === 'New').length
+
     res.json({
       totalOrders: ordersSnap.size,
       totalProducts: productsSnap.size,
       revenue,
       byStatus,
+      totalDealerApplications: dealerAppsSnap.size,
+      newDealerApplications,
     })
   } catch (err) {
     console.error('GET /admin/stats error:', err?.message || err)

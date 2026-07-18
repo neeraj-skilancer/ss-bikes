@@ -42,3 +42,11 @@ export const adminUpdateOrderStatus = (id, status) =>
   })
 
 export const adminStats = () => call('/api/admin/stats')
+
+export const adminListDealerApplications = () => call('/api/admin/dealer-applications')
+
+export const adminUpdateDealerApplicationStatus = (id, status) =>
+  call(`/api/admin/dealer-applications/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })

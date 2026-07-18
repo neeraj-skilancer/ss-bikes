@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { CheckCircle2, TrendingUp, MapPin, HeadphonesIcon, Handshake } from 'lucide-react'
+import { CheckCircle2, TrendingUp, MapPin, HeadphonesIcon, Handshake, Loader2 } from 'lucide-react'
+import { submitDealerApplication } from '../lib/dealers'
 
 const BENEFITS = [
   {
@@ -24,8 +25,37 @@ const BENEFITS = [
   },
 ]
 
+const EMPTY_FORM = {
+  name: '',
+  businessName: '',
+  phone: '',
+  email: '',
+  city: '',
+  state: '',
+  message: '',
+}
+
 export default function DealerNetwork() {
   const [sent, setSent] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [form, setForm] = useState(EMPTY_FORM)
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  async function onSubmit(e) {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      await submitDealerApplication(form)
+      setSent(true)
+    } catch (err) {
+      setError(err.message || 'Could not submit your application. Please try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   return (
     <>
@@ -77,44 +107,54 @@ export default function DealerNetwork() {
                 </p>
               </div>
             ) : (
-              <form
-                className="form-grid"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  setSent(true)
-                }}
-              >
+              <form className="form-grid" onSubmit={onSubmit}>
                 <div className="input">
                   <label>Full name</label>
-                  <input required placeholder="Your name" />
+                  <input required value={form.name} onChange={set('name')} placeholder="Your name" />
                 </div>
                 <div className="input">
                   <label>Business / firm name</label>
-                  <input placeholder="Optional" />
+                  <input value={form.businessName} onChange={set('businessName')} placeholder="Optional" />
                 </div>
                 <div className="input">
                   <label>Phone number</label>
-                  <input required type="tel" placeholder="+91" />
+                  <input required type="tel" value={form.phone} onChange={set('phone')} placeholder="+91" />
                 </div>
                 <div className="input">
                   <label>Email</label>
-                  <input required type="email" placeholder="you@example.com" />
+                  <input
+                    required
+                    type="email"
+                    value={form.email}
+                    onChange={set('email')}
+                    placeholder="you@example.com"
+                  />
                 </div>
                 <div className="input">
                   <label>City</label>
-                  <input required placeholder="City" />
+                  <input required value={form.city} onChange={set('city')} placeholder="City" />
                 </div>
                 <div className="input">
                   <label>State</label>
-                  <input required placeholder="State" />
+                  <input required value={form.state} onChange={set('state')} placeholder="State" />
                 </div>
                 <div className="input full">
                   <label>Tell us about yourself</label>
-                  <textarea rows={4} placeholder="Existing business, investment capacity, etc." />
+                  <textarea
+                    rows={4}
+                    value={form.message}
+                    onChange={set('message')}
+                    placeholder="Existing business, investment capacity, etc."
+                  />
                 </div>
+                {error && (
+                  <div className="input full">
+                    <div className="notice notice--error">{error}</div>
+                  </div>
+                )}
                 <div className="input full">
-                  <button className="btn btn--primary btn--block" type="submit">
-                    Submit application
+                  <button className="btn btn--primary btn--block" type="submit" disabled={busy}>
+                    {busy ? <Loader2 size={16} className="spin" /> : 'Submit application'}
                   </button>
                 </div>
               </form>
