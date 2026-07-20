@@ -11,6 +11,8 @@ import { productsRouter } from './routes/products.js'
 import { ordersRouter } from './routes/orders.js'
 import { dealersRouter } from './routes/dealers.js'
 import { dealerStoresRouter } from './routes/dealerStores.js'
+import { testDriveRouter } from './routes/testDrive.js'
+import { emailConfigured } from './lib/mailer.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const distDir = path.join(__dirname, '..', 'dist')
@@ -41,6 +43,7 @@ app.use('/api', productsRouter) // /api/products, /api/admin/products...
 app.use('/api', ordersRouter) // /api/orders, /api/admin/orders...
 app.use('/api', dealersRouter) // /api/dealer-applications, /api/admin/dealer-applications...
 app.use('/api', dealerStoresRouter) // /api/dealers, /api/dealers/:slug, /api/admin/dealer-stores...
+app.use('/api', testDriveRouter) // /api/test-drive, /api/admin/test-drive-bookings...
 
 // Tells the frontend whether online payment is available + the public key id.
 app.get('/api/config', (_req, res) => {
@@ -48,7 +51,7 @@ app.get('/api/config', (_req, res) => {
 })
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, razorpay: configured })
+  res.json({ ok: true, razorpay: configured, email: emailConfigured })
 })
 
 // Create a Razorpay order. amount is in paise (₹1 = 100).

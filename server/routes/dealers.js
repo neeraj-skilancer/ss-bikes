@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { db, FieldValue } from '../lib/firestore.js'
 import { requireAdmin } from '../lib/adminAuth.js'
+import { notifyDealerApplication } from '../lib/mailer.js'
 
 export const dealersRouter = Router()
 
@@ -38,6 +39,7 @@ dealersRouter.post('/dealer-applications', async (req, res) => {
     }
 
     const ref = await db.collection('dealerApplications').add(application)
+    notifyDealerApplication(application).catch(() => {})
     res.status(201).json({ id: ref.id })
   } catch (err) {
     console.error('POST /dealer-applications error:', err?.message || err)

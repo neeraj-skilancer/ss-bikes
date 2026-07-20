@@ -12,6 +12,7 @@ import {
   Store,
   TrendingUp,
   ArrowRight,
+  Bike,
 } from 'lucide-react'
 import { adminStats } from '../../lib/adminApi'
 import { formatINR } from '../../data/products'
@@ -125,6 +126,20 @@ export default function AdminDashboard() {
               value={stats.totalDealerStores}
               label="Live dealer stores"
             />
+            <StatCard
+              to="/admin/test-drive-bookings"
+              icon={Bike}
+              iconClass="admin-stat__ico--amber"
+              value={stats.totalTestDriveBookings}
+              label="Test drive bookings"
+              extra={
+                stats.newTestDriveBookings > 0 && (
+                  <span className="tag tag--blue" style={{ marginLeft: 8, verticalAlign: 'middle' }}>
+                    {stats.newTestDriveBookings} new
+                  </span>
+                )
+              }
+            />
           </div>
 
           <div className="admin__head" style={{ marginTop: 34 }}>
@@ -215,6 +230,9 @@ export default function AdminDashboard() {
             </Link>
             <Link to="/admin/dealers" className="btn btn--ghost">
               View dealer applications
+            </Link>
+            <Link to="/admin/test-drive-bookings" className="btn btn--ghost">
+              View test drive bookings
             </Link>
           </div>
         </>

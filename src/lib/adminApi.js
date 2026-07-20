@@ -66,3 +66,11 @@ export const adminUpdateDealerStore = (slug, dealer) =>
 
 export const adminDeleteDealerStore = (slug) =>
   call(`/api/admin/dealer-stores/${encodeURIComponent(slug)}`, { method: 'DELETE' })
+
+export const adminListTestDriveBookings = () => call('/api/admin/test-drive-bookings')
+
+export const adminUpdateTestDriveBookingStatus = (id, status) =>
+  call(`/api/admin/test-drive-bookings/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })

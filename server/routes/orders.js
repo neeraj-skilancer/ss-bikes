@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { db, FieldValue, nextOrderNumber } from '../lib/firestore.js'
 import { requireAdmin } from '../lib/adminAuth.js'
 import { getActiveDealerBySlug } from './dealerStores.js'
+import { notifyNewOrder } from '../lib/mailer.js'
 
 export const ordersRouter = Router()
 
@@ -102,6 +103,7 @@ ordersRouter.post('/orders', async (req, res) => {
     }
 
     const ref = await db.collection('orders').add(order)
+    notifyNewOrder(order, orderNumber).catch(() => {})
     res.status(201).json({ orderId: ref.id, orderNumber })
   } catch (err) {
     console.error('POST /orders error:', err?.message || err)
@@ -139,13 +141,15 @@ ordersRouter.patch('/admin/orders/:id', requireAdmin, async (req, res) => {
 
 ordersRouter.get('/admin/stats', requireAdmin, async (_req, res) => {
   try {
-    const [ordersSnap, productsSnap, dealerAppsSnap, dealerStoresSnap, recentSnap] = await Promise.all([
-      db.collection('orders').get(),
-      db.collection('products').get(),
-      db.collection('dealerApplications').get(),
-      db.collection('dealerStores').get(),
-      db.collection('orders').orderBy('createdAt', 'desc').limit(5).get(),
-    ])
+    const [ordersSnap, productsSnap, dealerAppsSnap, dealerStoresSnap, recentSnap, testDriveSnap] =
+      await Promise.all([
+        db.collection('orders').get(),
+        db.collection('products').get(),
+        db.collection('dealerApplications').get(),
+        db.collection('dealerStores').get(),
+        db.collection('orders').orderBy('createdAt', 'desc').limit(5).get(),
+        db.collection('testDriveBookings').get(),
+      ])
 
     let revenue = 0
     const byStatus = { Processing: 0, Shipped: 0, Delivered: 0, Cancelled: 0 }
@@ -156,6 +160,7 @@ ordersRouter.get('/admin/stats', requireAdmin, async (_req, res) => {
     }
 
     const newDealerApplications = dealerAppsSnap.docs.filter((d) => d.data().status === 'New').length
+    const newTestDriveBookings = testDriveSnap.docs.filter((d) => d.data().status === 'New').length
 
     res.json({
       totalOrders: ordersSnap.size,
@@ -166,6 +171,8 @@ ordersRouter.get('/admin/stats', requireAdmin, async (_req, res) => {
       newDealerApplications,
       totalDealerStores: dealerStoresSnap.docs.filter((d) => d.data().active !== false).length,
       recentOrders: recentSnap.docs.map(docToOrder),
+      totalTestDriveBookings: testDriveSnap.size,
+      newTestDriveBookings,
     })
   } catch (err) {
     console.error('GET /admin/stats error:', err?.message || err)

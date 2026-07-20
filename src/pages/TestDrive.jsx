@@ -1,11 +1,33 @@
 import { useState } from 'react'
-import { CheckCircle2, MapPin, Clock, Bike } from 'lucide-react'
+import { CheckCircle2, MapPin, Clock, Bike, Loader2 } from 'lucide-react'
 import { useProducts } from '../context/ProductsContext'
+import { submitTestDrive } from '../lib/testDrive'
+
+const EMPTY_FORM = { name: '', phone: '', model: '', date: '', location: '' }
 
 export default function TestDrive() {
   const { byCategory } = useProducts()
   const bikes = byCategory('e-bikes')
   const [sent, setSent] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [form, setForm] = useState(EMPTY_FORM)
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  async function onSubmit(e) {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      await submitTestDrive(form)
+      setSent(true)
+    } catch (err) {
+      setError(err.message || 'Could not submit your booking. Please try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   return (
     <>
@@ -59,29 +81,23 @@ export default function TestDrive() {
                 </p>
               </div>
             ) : (
-              <form
-                className="form-grid"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  setSent(true)
-                }}
-              >
+              <form className="form-grid" onSubmit={onSubmit}>
                 <div className="input">
                   <label>Full name</label>
-                  <input required placeholder="Your name" />
+                  <input required value={form.name} onChange={set('name')} placeholder="Your name" />
                 </div>
                 <div className="input">
                   <label>Phone number</label>
-                  <input required type="tel" placeholder="+91" />
+                  <input required type="tel" value={form.phone} onChange={set('phone')} placeholder="+91" />
                 </div>
                 <div className="input">
                   <label>Choose a model</label>
-                  <select defaultValue="">
+                  <select value={form.model} onChange={set('model')}>
                     <option value="" disabled>
                       Select a bike
                     </option>
                     {bikes.map((b) => (
-                      <option key={b.slug} value={b.slug}>
+                      <option key={b.slug} value={b.name}>
                         {b.name}
                       </option>
                     ))}
@@ -89,15 +105,25 @@ export default function TestDrive() {
                 </div>
                 <div className="input">
                   <label>Preferred date</label>
-                  <input type="date" required />
+                  <input type="date" required value={form.date} onChange={set('date')} />
                 </div>
                 <div className="input full">
                   <label>City / area</label>
-                  <input required placeholder="Where should we set up your ride?" />
+                  <input
+                    required
+                    value={form.location}
+                    onChange={set('location')}
+                    placeholder="Where should we set up your ride?"
+                  />
                 </div>
+                {error && (
+                  <div className="input full">
+                    <div className="notice notice--error">{error}</div>
+                  </div>
+                )}
                 <div className="input full">
-                  <button className="btn btn--primary btn--block" type="submit">
-                    Book my test drive
+                  <button className="btn btn--primary btn--block" type="submit" disabled={busy}>
+                    {busy ? <Loader2 size={16} className="spin" /> : 'Book my test drive'}
                   </button>
                 </div>
               </form>

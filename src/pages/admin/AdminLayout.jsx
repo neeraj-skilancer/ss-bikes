@@ -6,6 +6,7 @@ import {
   ClipboardList,
   Handshake,
   Store,
+  Bike,
   LogOut,
   Loader2,
   ExternalLink,
@@ -50,6 +51,9 @@ export default function AdminLayout() {
           </NavLink>
           <NavLink to="/admin/dealers">
             <Handshake size={17} /> Applications
+          </NavLink>
+          <NavLink to="/admin/test-drive-bookings">
+            <Bike size={17} /> Test Drives
           </NavLink>
         </nav>
         <div className="admin__sidebar-foot">
