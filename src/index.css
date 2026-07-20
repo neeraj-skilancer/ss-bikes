@@ -2130,6 +2130,18 @@ ul {
   gap: 14px;
 }
 
+.admin-stat--link {
+  color: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  cursor: pointer;
+}
+
+.admin-stat--link:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+
 .admin-stat__ico {
   width: 40px;
   height: 40px;
@@ -2201,6 +2213,19 @@ ul {
 
 .admin-table__row--orders {
   grid-template-columns: 80px 1.1fr 0.9fr 0.9fr 0.8fr 1fr 140px 40px;
+}
+
+.admin-table__row--recent {
+  grid-template-columns: 70px 1.2fr 1fr 1fr 110px 90px;
+}
+
+.admin-table__row--clickable {
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.admin-table__row--clickable:hover {
+  background: var(--soft);
 }
 
 .admin-table__row:last-child {
@@ -2413,7 +2438,8 @@ ul {
   .admin-table__row,
   .admin-table__row--products,
   .admin-table__row--dealers,
-  .admin-table__row--orders {
+  .admin-table__row--orders,
+  .admin-table__row--recent {
     grid-template-columns: 1fr;
     gap: 4px;
   }
