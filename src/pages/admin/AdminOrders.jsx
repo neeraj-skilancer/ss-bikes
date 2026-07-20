@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { ChevronDown, ChevronUp, Loader2, Phone, Mail, MapPin } from 'lucide-react'
 import { adminListOrders, adminUpdateOrderStatus } from '../../lib/adminApi'
 import { formatINR } from '../../data/products'
+import { formatOrderNumber } from '../../lib/orders'
 
 const STATUSES = ['Processing', 'Shipped', 'Delivered', 'Cancelled']
 
@@ -18,11 +20,13 @@ function fmtDate(iso) {
 }
 
 export default function AdminOrders() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [orders, setOrders] = useState(null)
   const [error, setError] = useState('')
   const [openId, setOpenId] = useState(null)
   const [updating, setUpdating] = useState(null)
-  const [filter, setFilter] = useState('all')
+  const initialStatus = searchParams.get('status')
+  const [filter, setFilter] = useState(STATUSES.includes(initialStatus) ? initialStatus : 'all')
 
   function load() {
     adminListOrders()
@@ -61,7 +65,10 @@ export default function AdminOrders() {
             <button
               key={s}
               className={`pill${filter === s ? ' active' : ''}`}
-              onClick={() => setFilter(s)}
+              onClick={() => {
+                setFilter(s)
+                setSearchParams(s === 'all' ? {} : { status: s })
+              }}
               type="button"
             >
               {s === 'all' ? 'All' : s}
@@ -93,7 +100,7 @@ export default function AdminOrders() {
           {visible.map((o) => (
             <div key={o.id}>
               <div className="admin-table__row admin-table__row--orders">
-                <span className="admin-table__mono">{o.id.slice(0, 8)}</span>
+                <span className="admin-table__mono">{formatOrderNumber(o)}</span>
                 <span>{o.customer?.name}</span>
                 <span>{o.items?.reduce((n, it) => n + it.qty, 0)} item(s)</span>
                 <span>{formatINR(o.total)}</span>

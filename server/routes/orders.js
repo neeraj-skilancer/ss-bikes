@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { db, FieldValue } from '../lib/firestore.js'
+import { db, FieldValue, nextOrderNumber } from '../lib/firestore.js'
 import { requireAdmin } from '../lib/adminAuth.js'
 import { getActiveDealerBySlug } from './dealerStores.js'
 
@@ -69,7 +69,10 @@ ordersRouter.post('/orders', async (req, res) => {
       dealerInfo = { dealerSlug: dealer.slug, dealerName: dealer.name }
     }
 
+    const orderNumber = await nextOrderNumber()
+
     const order = {
+      orderNumber,
       ...(dealerInfo || {}),
       customer: {
         name: String(customer.name),
@@ -99,7 +102,7 @@ ordersRouter.post('/orders', async (req, res) => {
     }
 
     const ref = await db.collection('orders').add(order)
-    res.status(201).json({ orderId: ref.id })
+    res.status(201).json({ orderId: ref.id, orderNumber })
   } catch (err) {
     console.error('POST /orders error:', err?.message || err)
     res.status(500).json({ error: 'Could not save order.' })
@@ -136,11 +139,12 @@ ordersRouter.patch('/admin/orders/:id', requireAdmin, async (req, res) => {
 
 ordersRouter.get('/admin/stats', requireAdmin, async (_req, res) => {
   try {
-    const [ordersSnap, productsSnap, dealerAppsSnap, dealerStoresSnap] = await Promise.all([
+    const [ordersSnap, productsSnap, dealerAppsSnap, dealerStoresSnap, recentSnap] = await Promise.all([
       db.collection('orders').get(),
       db.collection('products').get(),
       db.collection('dealerApplications').get(),
       db.collection('dealerStores').get(),
+      db.collection('orders').orderBy('createdAt', 'desc').limit(5).get(),
     ])
 
     let revenue = 0
@@ -161,6 +165,7 @@ ordersRouter.get('/admin/stats', requireAdmin, async (_req, res) => {
       totalDealerApplications: dealerAppsSnap.size,
       newDealerApplications,
       totalDealerStores: dealerStoresSnap.docs.filter((d) => d.data().active !== false).length,
+      recentOrders: recentSnap.docs.map(docToOrder),
     })
   } catch (err) {
     console.error('GET /admin/stats error:', err?.message || err)

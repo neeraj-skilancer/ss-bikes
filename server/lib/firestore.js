@@ -11,6 +11,19 @@ if (!getApps().length) {
 export const db = getFirestore()
 export { FieldValue }
 
+// Atomically issues the next order number. Starts at 1000 so every order gets
+// a clean 4-digit id (1000, 1001, …) instead of Firestore's long random doc id.
+export async function nextOrderNumber() {
+  const counterRef = db.collection('counters').doc('orders')
+  return db.runTransaction(async (tx) => {
+    const doc = await tx.get(counterRef)
+    const current = doc.exists ? doc.data().value || 999 : 999
+    const next = current + 1
+    tx.set(counterRef, { value: next }, { merge: true })
+    return next
+  })
+}
+
 // Seeds the `products` collection from the original static catalog the very
 // first time it's empty (e.g. right after the Firestore database is created).
 // Safe to call on every boot — it no-ops once products exist.
