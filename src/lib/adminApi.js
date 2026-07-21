@@ -12,8 +12,9 @@ async function call(path, opts = {}) {
   return data
 }
 
-export const adminLogin = (password) =>
-  call('/api/admin/login', { method: 'POST', body: JSON.stringify({ password }) })
+// Leave email blank to sign in as the owner (single shared password).
+export const adminLogin = (password, email) =>
+  call('/api/admin/login', { method: 'POST', body: JSON.stringify({ password, email: email || undefined }) })
 
 export const adminLogout = () => call('/api/admin/logout', { method: 'POST' })
 
@@ -74,3 +75,17 @@ export const adminUpdateTestDriveBookingStatus = (id, status) =>
     method: 'PATCH',
     body: JSON.stringify({ status }),
   })
+
+// ---- Manage Users (owner-only) ----
+export const adminListPermissionCatalog = () => call('/api/admin/permissions')
+
+export const adminListUsers = () => call('/api/admin/users')
+
+export const adminCreateUser = (user) =>
+  call('/api/admin/users', { method: 'POST', body: JSON.stringify(user) })
+
+export const adminUpdateUser = (id, patch) =>
+  call(`/api/admin/users/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(patch) })
+
+export const adminDeleteUser = (id) =>
+  call(`/api/admin/users/${encodeURIComponent(id)}`, { method: 'DELETE' })

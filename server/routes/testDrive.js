@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { db, FieldValue } from '../lib/firestore.js'
-import { requireAdmin } from '../lib/adminAuth.js'
+import { requirePermission } from '../lib/adminAuth.js'
 import { notifyTestDrive } from '../lib/mailer.js'
 
 export const testDriveRouter = Router()
@@ -46,7 +46,7 @@ testDriveRouter.post('/test-drive', async (req, res) => {
 })
 
 // ---- Admin ----
-testDriveRouter.get('/admin/test-drive-bookings', requireAdmin, async (_req, res) => {
+testDriveRouter.get('/admin/test-drive-bookings', requirePermission('viewTestDrives'), async (_req, res) => {
   try {
     const snap = await db.collection('testDriveBookings').orderBy('createdAt', 'desc').get()
     res.json({ bookings: snap.docs.map(docToBooking) })
@@ -56,7 +56,7 @@ testDriveRouter.get('/admin/test-drive-bookings', requireAdmin, async (_req, res
   }
 })
 
-testDriveRouter.patch('/admin/test-drive-bookings/:id', requireAdmin, async (req, res) => {
+testDriveRouter.patch('/admin/test-drive-bookings/:id', requirePermission('manageTestDrives'), async (req, res) => {
   try {
     const { status } = req.body || {}
     if (!STATUSES.includes(status)) {

@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { db, FieldValue } from '../lib/firestore.js'
-import { requireAdmin } from '../lib/adminAuth.js'
+import { requirePermission } from '../lib/adminAuth.js'
 
 export const dealerStoresRouter = Router()
 
@@ -117,7 +117,7 @@ dealerStoresRouter.get('/dealers/:slug', async (req, res) => {
 
 // ---- Admin ----
 
-dealerStoresRouter.get('/admin/dealer-stores', requireAdmin, async (_req, res) => {
+dealerStoresRouter.get('/admin/dealer-stores', requirePermission('viewDealers'), async (_req, res) => {
   try {
     const snap = await db.collection('dealerStores').get()
     res.json({ dealers: snap.docs.map(docToDealer) })
@@ -127,7 +127,7 @@ dealerStoresRouter.get('/admin/dealer-stores', requireAdmin, async (_req, res) =
   }
 })
 
-dealerStoresRouter.get('/admin/dealer-stores/:slug', requireAdmin, async (req, res) => {
+dealerStoresRouter.get('/admin/dealer-stores/:slug', requirePermission('viewDealers'), async (req, res) => {
   try {
     const doc = await db.collection('dealerStores').doc(req.params.slug).get()
     if (!doc.exists) return res.status(404).json({ error: 'Dealer not found.' })
@@ -138,7 +138,7 @@ dealerStoresRouter.get('/admin/dealer-stores/:slug', requireAdmin, async (req, r
   }
 })
 
-dealerStoresRouter.post('/admin/dealer-stores', requireAdmin, async (req, res) => {
+dealerStoresRouter.post('/admin/dealer-stores', requirePermission('manageDealers'), async (req, res) => {
   try {
     const body = req.body || {}
     if (!body.name) return res.status(400).json({ error: 'name is required.' })
@@ -166,7 +166,7 @@ dealerStoresRouter.post('/admin/dealer-stores', requireAdmin, async (req, res) =
 // Partial update: only fields present in the body are touched. This lets the
 // dealer-info form and the dedicated dealer-products screen each save
 // independently without clobbering fields the other one owns.
-dealerStoresRouter.put('/admin/dealer-stores/:slug', requireAdmin, async (req, res) => {
+dealerStoresRouter.put('/admin/dealer-stores/:slug', requirePermission('manageDealers'), async (req, res) => {
   try {
     const ref = db.collection('dealerStores').doc(req.params.slug)
     if (!(await ref.get()).exists) return res.status(404).json({ error: 'Dealer not found.' })
@@ -198,7 +198,7 @@ dealerStoresRouter.put('/admin/dealer-stores/:slug', requireAdmin, async (req, r
   }
 })
 
-dealerStoresRouter.delete('/admin/dealer-stores/:slug', requireAdmin, async (req, res) => {
+dealerStoresRouter.delete('/admin/dealer-stores/:slug', requirePermission('manageDealers'), async (req, res) => {
   try {
     await db.collection('dealerStores').doc(req.params.slug).delete()
     res.json({ ok: true })

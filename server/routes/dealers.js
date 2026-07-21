@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { db, FieldValue } from '../lib/firestore.js'
-import { requireAdmin } from '../lib/adminAuth.js'
+import { requirePermission } from '../lib/adminAuth.js'
 import { notifyDealerApplication } from '../lib/mailer.js'
 
 export const dealersRouter = Router()
@@ -48,7 +48,7 @@ dealersRouter.post('/dealer-applications', async (req, res) => {
 })
 
 // ---- Admin ----
-dealersRouter.get('/admin/dealer-applications', requireAdmin, async (_req, res) => {
+dealersRouter.get('/admin/dealer-applications', requirePermission('viewDealers'), async (_req, res) => {
   try {
     const snap = await db.collection('dealerApplications').orderBy('createdAt', 'desc').get()
     res.json({ applications: snap.docs.map(docToApplication) })
@@ -58,7 +58,7 @@ dealersRouter.get('/admin/dealer-applications', requireAdmin, async (_req, res) 
   }
 })
 
-dealersRouter.patch('/admin/dealer-applications/:id', requireAdmin, async (req, res) => {
+dealersRouter.patch('/admin/dealer-applications/:id', requirePermission('manageDealers'), async (req, res) => {
   try {
     const { status } = req.body || {}
     if (!STATUSES.includes(status)) {

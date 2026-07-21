@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { db, FieldValue } from '../lib/firestore.js'
-import { requireAdmin } from '../lib/adminAuth.js'
+import { requirePermission, requireAnyPermission } from '../lib/adminAuth.js'
 
 export const productsRouter = Router()
 
@@ -36,7 +36,7 @@ productsRouter.get('/products', async (_req, res) => {
 
 // ---- Admin ----
 
-productsRouter.get('/admin/products', requireAdmin, async (_req, res) => {
+productsRouter.get('/admin/products', requirePermission('viewProducts'), async (_req, res) => {
   try {
     const snap = await db.collection('products').get()
     res.json({ products: snap.docs.map(docToProduct) })
@@ -46,7 +46,7 @@ productsRouter.get('/admin/products', requireAdmin, async (_req, res) => {
   }
 })
 
-productsRouter.post('/admin/products', requireAdmin, async (req, res) => {
+productsRouter.post('/admin/products', requirePermission('addProducts'), async (req, res) => {
   try {
     const body = req.body || {}
     if (!body.name || !body.category || body.price == null) {
@@ -89,39 +89,71 @@ productsRouter.post('/admin/products', requireAdmin, async (req, res) => {
   }
 })
 
-productsRouter.put('/admin/products/:slug', requireAdmin, async (req, res) => {
-  try {
-    const ref = db.collection('products').doc(req.params.slug)
-    const existing = await ref.get()
-    if (!existing.exists) return res.status(404).json({ error: 'Product not found.' })
+// Field-level enforcement: a caller needs the *specific* permission for the
+// category of field they're changing, not just blanket product-edit access.
+// This is checked here (server-side) regardless of what the client sends —
+// the frontend also hides/disables these fields, but that's UX, not security.
+const PRICING_FIELDS = ['price', 'compareAt']
+const INVENTORY_FIELDS = ['soldOut', 'active']
+const DETAIL_FIELDS = [
+  'name', 'category', 'tagline', 'image', 'range', 'short', 'badge',
+  'colors', 'colorImages', 'specs', 'motorW', 'amazonUrl', 'flipkartUrl',
+]
 
-    const body = req.body || {}
-    const update = { updatedAt: FieldValue.serverTimestamp() }
-    const fields = [
-      'name', 'category', 'tagline', 'image', 'range', 'short', 'badge',
-    ]
-    for (const f of fields) if (body[f] !== undefined) update[f] = body[f]
-    if (body.price !== undefined) update.price = Number(body.price)
-    if (body.compareAt !== undefined) update.compareAt = body.compareAt === '' ? null : Number(body.compareAt)
-    if (body.motorW !== undefined) update.motorW = body.motorW === '' ? null : Number(body.motorW)
-    if (body.colors !== undefined) update.colors = Array.isArray(body.colors) ? body.colors : []
-    if (body.colorImages !== undefined) update.colorImages = body.colorImages || {}
-    if (body.specs !== undefined) update.specs = body.specs || {}
-    if (body.soldOut !== undefined) update.soldOut = Boolean(body.soldOut)
-    if (body.active !== undefined) update.active = Boolean(body.active)
-    if (body.amazonUrl !== undefined) update.amazonUrl = body.amazonUrl || null
-    if (body.flipkartUrl !== undefined) update.flipkartUrl = body.flipkartUrl || null
+productsRouter.put(
+  '/admin/products/:slug',
+  requireAnyPermission(['editPricing', 'editInventory', 'editProductDetails']),
+  async (req, res) => {
+    try {
+      const ref = db.collection('products').doc(req.params.slug)
+      const existing = await ref.get()
+      if (!existing.exists) return res.status(404).json({ error: 'Product not found.' })
 
-    await ref.update(update)
-    const fresh = await ref.get()
-    res.json({ product: docToProduct(fresh) })
-  } catch (err) {
-    console.error('PUT /admin/products error:', err?.message || err)
-    res.status(500).json({ error: 'Could not update product.' })
-  }
-})
+      const body = req.body || {}
+      const perms = req.adminSession.permissions
+      const update = { updatedAt: FieldValue.serverTimestamp() }
+      const blocked = []
 
-productsRouter.delete('/admin/products/:slug', requireAdmin, async (req, res) => {
+      for (const f of PRICING_FIELDS) {
+        if (body[f] === undefined) continue
+        if (!perms.editPricing) {
+          blocked.push(f)
+          continue
+        }
+        update[f] = f === 'compareAt' ? (body[f] === '' ? null : Number(body[f])) : Number(body[f])
+      }
+      for (const f of INVENTORY_FIELDS) {
+        if (body[f] === undefined) continue
+        if (!perms.editInventory) {
+          blocked.push(f)
+          continue
+        }
+        update[f] = Boolean(body[f])
+      }
+      for (const f of DETAIL_FIELDS) {
+        if (body[f] === undefined) continue
+        if (!perms.editProductDetails) {
+          blocked.push(f)
+          continue
+        }
+        update[f] = f === 'motorW' ? (body[f] === '' ? null : Number(body[f])) : body[f]
+      }
+
+      if (blocked.length > 0) {
+        return res.status(403).json({ error: `You don't have permission to edit: ${blocked.join(', ')}.` })
+      }
+
+      await ref.update(update)
+      const fresh = await ref.get()
+      res.json({ product: docToProduct(fresh) })
+    } catch (err) {
+      console.error('PUT /admin/products error:', err?.message || err)
+      res.status(500).json({ error: 'Could not update product.' })
+    }
+  },
+)
+
+productsRouter.delete('/admin/products/:slug', requirePermission('deleteProducts'), async (req, res) => {
   try {
     await db.collection('products').doc(req.params.slug).delete()
     res.json({ ok: true })

@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { db, FieldValue, nextOrderNumber } from '../lib/firestore.js'
-import { requireAdmin } from '../lib/adminAuth.js'
+import { requireAdmin, requirePermission } from '../lib/adminAuth.js'
 import { getActiveDealerBySlug } from './dealerStores.js'
 import { notifyNewOrder } from '../lib/mailer.js'
 
@@ -112,7 +112,7 @@ ordersRouter.post('/orders', async (req, res) => {
 })
 
 // ---- Admin ----
-ordersRouter.get('/admin/orders', requireAdmin, async (_req, res) => {
+ordersRouter.get('/admin/orders', requirePermission('viewOrders'), async (_req, res) => {
   try {
     const snap = await db.collection('orders').orderBy('createdAt', 'desc').get()
     res.json({ orders: snap.docs.map(docToOrder) })
@@ -122,7 +122,7 @@ ordersRouter.get('/admin/orders', requireAdmin, async (_req, res) => {
   }
 })
 
-ordersRouter.patch('/admin/orders/:id', requireAdmin, async (req, res) => {
+ordersRouter.patch('/admin/orders/:id', requirePermission('manageOrders'), async (req, res) => {
   try {
     const { status } = req.body || {}
     if (!STATUSES.includes(status)) {

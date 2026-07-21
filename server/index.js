@@ -12,6 +12,7 @@ import { ordersRouter } from './routes/orders.js'
 import { dealersRouter } from './routes/dealers.js'
 import { dealerStoresRouter } from './routes/dealerStores.js'
 import { testDriveRouter } from './routes/testDrive.js'
+import { adminUsersRouter } from './routes/adminUsers.js'
 import { emailConfigured } from './lib/mailer.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -44,6 +45,7 @@ app.use('/api', ordersRouter) // /api/orders, /api/admin/orders...
 app.use('/api', dealersRouter) // /api/dealer-applications, /api/admin/dealer-applications...
 app.use('/api', dealerStoresRouter) // /api/dealers, /api/dealers/:slug, /api/admin/dealer-stores...
 app.use('/api', testDriveRouter) // /api/test-drive, /api/admin/test-drive-bookings...
+app.use('/api', adminUsersRouter) // /api/admin/users, /api/admin/permissions (owner-only)
 
 // Tells the frontend whether online payment is available + the public key id.
 app.get('/api/config', (_req, res) => {
