@@ -30,18 +30,35 @@ export async function nextOrderNumber() {
 export async function seedIfEmpty() {
   try {
     const snap = await db.collection('products').limit(1).get()
-    if (!snap.empty) return
-    const batch = db.batch()
-    for (const p of seedProducts) {
-      batch.set(db.collection('products').doc(p.slug), {
-        ...p,
+    if (snap.empty) {
+      const batch = db.batch()
+      for (const p of seedProducts) {
+        batch.set(db.collection('products').doc(p.slug), {
+          ...p,
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+        })
+      }
+      await batch.commit()
+      console.log(`Seeded ${seedProducts.length} products into Firestore.`)
+    }
+  } catch (err) {
+    console.error('Seed check failed (non-fatal):', err?.message || err)
+  }
+
+  try {
+    const settingsRef = db.collection('settings').doc('codFees')
+    const doc = await settingsRef.get()
+    if (!doc.exists) {
+      await settingsRef.set({
+        default: { ebikeFee: 999, accessoryFee: 199 },
+        states: {},
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       })
+      console.log('Seeded default COD fee configuration into Firestore.')
     }
-    await batch.commit()
-    console.log(`Seeded ${seedProducts.length} products into Firestore.`)
   } catch (err) {
-    console.error('Seed check failed (non-fatal):', err?.message || err)
+    console.error('Settings seed check failed (non-fatal):', err?.message || err)
   }
 }

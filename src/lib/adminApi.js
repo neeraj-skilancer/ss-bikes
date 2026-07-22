@@ -89,3 +89,6 @@ export const adminUpdateUser = (id, patch) =>
 
 export const adminDeleteUser = (id) =>
   call(`/api/admin/users/${encodeURIComponent(id)}`, { method: 'DELETE' })
+
+export const adminUpdateCodFees = (config) =>
+  call('/api/admin/settings/cod-fees', { method: 'PUT', body: JSON.stringify(config) })

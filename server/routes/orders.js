@@ -43,9 +43,16 @@ ordersRouter.post('/orders', async (req, res) => {
       return res.status(400).json({ error: 'Invalid payment method.' })
     }
 
+    const rzpEnabled = Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET)
+
     // Online orders must present a payment already verified by /api/verify.
     if (paymentMethod === 'online' && !razorpayPaymentId) {
       return res.status(400).json({ error: 'Online orders require a verified payment.' })
+    }
+
+    // COD orders require a verified payment for the upfront logistics fee if Razorpay is enabled.
+    if (paymentMethod === 'cod' && rzpEnabled && !razorpayPaymentId) {
+      return res.status(400).json({ error: 'COD orders require an upfront logistics fee payment.' })
     }
 
     // Dealer-scoped checkout: re-validate everything server-side — never trust
@@ -72,6 +79,57 @@ ordersRouter.post('/orders', async (req, res) => {
 
     const orderNumber = await nextOrderNumber()
 
+    // Fetch COD settings
+    let codConfig = {
+      default: { ebikeFee: 999, accessoryFee: 199 },
+      states: {},
+    }
+    try {
+      const configDoc = await db.collection('settings').doc('codFees').get()
+      if (configDoc.exists) {
+        codConfig = configDoc.data()
+      }
+    } catch (configErr) {
+      console.error('Could not fetch COD settings, using defaults:', configErr)
+    }
+
+    const stateName = String(customer.state || '').trim()
+    const stateConfig = (codConfig.states && stateName && codConfig.states[stateName])
+      ? codConfig.states[stateName]
+      : codConfig.default
+
+    const ebikeFeeVal = stateConfig.ebikeFee != null ? Number(stateConfig.ebikeFee) : 999
+    const accessoryFeeVal = stateConfig.accessoryFee != null ? Number(stateConfig.accessoryFee) : 199
+
+    // Calculate logistics fee and COD balance
+    let upfrontPaid = 0
+    let remainingCodAmount = Number(total) || 0
+    let computedPaymentStatus = 'Pending (COD)'
+
+    if (paymentMethod === 'online') {
+      upfrontPaid = Number(total) || 0
+      remainingCodAmount = 0
+      computedPaymentStatus = 'Paid'
+    } else if (paymentMethod === 'cod') {
+      if (rzpEnabled) {
+        // Query database to check if any item is an e-bike
+        const itemSlugs = items.map((it) => String(it.slug))
+        const productDocs = await Promise.all(
+          itemSlugs.map((slug) => db.collection('products').doc(slug).get())
+        )
+        const hasEbike = productDocs.some((doc) => doc.exists && doc.data().category === 'e-bikes')
+        
+        const fee = hasEbike ? ebikeFeeVal : Math.min(accessoryFeeVal, Number(total) || 0)
+        upfrontPaid = fee
+        remainingCodAmount = Math.max(0, (Number(total) || 0) - fee)
+        computedPaymentStatus = 'Partially Paid (COD)'
+      } else {
+        upfrontPaid = 0
+        remainingCodAmount = Number(total) || 0
+        computedPaymentStatus = 'Pending (COD)'
+      }
+    }
+
     const order = {
       orderNumber,
       ...(dealerInfo || {}),
@@ -81,6 +139,7 @@ ordersRouter.post('/orders', async (req, res) => {
         email: String(customer.email || ''),
         address: String(customer.address),
         city: String(customer.city || ''),
+        state: String(customer.state || ''),
         pin: String(customer.pin || ''),
       },
       items: items.map((it) => ({
@@ -94,7 +153,9 @@ ordersRouter.post('/orders', async (req, res) => {
       shipping: Number(shipping) || 0,
       total: Number(total) || 0,
       paymentMethod,
-      paymentStatus: paymentMethod === 'online' ? 'Paid' : 'Pending (COD)',
+      paymentStatus: computedPaymentStatus,
+      upfrontPaid,
+      remainingCodAmount,
       razorpayOrderId: razorpayOrderId || null,
       razorpayPaymentId: razorpayPaymentId || null,
       status: 'Processing',

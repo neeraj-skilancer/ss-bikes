@@ -6,6 +6,45 @@ import { formatINR } from '../data/products'
 import { getPaymentConfig, loadRazorpay, createOrder, verifyPayment, saveOrder } from '../lib/payment'
 import { fetchDealer } from '../lib/dealerStores'
 
+const INDIAN_STATES = [
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chhattisgarh',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tamil Nadu',
+  'Telangana',
+  'Tripura',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal',
+  'Andaman and Nicobar Islands',
+  'Chandigarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi',
+  'Jammu and Kashmir',
+  'Ladakh',
+  'Lakshadweep',
+  'Puducherry',
+]
+
 export default function Checkout() {
   const { lines, subtotal, clear, count, dealer } = useStore()
   const [placed, setPlaced] = useState(null) // { method, paymentId? }
@@ -20,11 +59,28 @@ export default function Checkout() {
     email: '',
     address: '',
     city: '',
+    state: '',
     pin: '',
+  })
+  const [codConfig, setCodConfig] = useState({
+    default: { ebikeFee: 999, accessoryFee: 199 },
+    states: {},
   })
 
   const shipping = 0
   const total = subtotal + shipping
+
+  // Calculate upfront logistics fee for COD orders based on settings
+  const stateConfig = (codConfig.states && form.state && codConfig.states[form.state])
+    ? codConfig.states[form.state]
+    : codConfig.default
+  
+  const ebikeFeeVal = stateConfig.ebikeFee != null ? Number(stateConfig.ebikeFee) : 999
+  const accessoryFeeVal = stateConfig.accessoryFee != null ? Number(stateConfig.accessoryFee) : 199
+
+  const hasEbike = lines.some((l) => l.product.category === 'e-bikes')
+  const logisticsFee = hasEbike ? ebikeFeeVal : Math.min(accessoryFeeVal, total)
+  const remainingCod = Math.max(0, total - logisticsFee)
 
   useEffect(() => {
     if (!dealer?.slug) {
@@ -47,6 +103,7 @@ export default function Checkout() {
         email: form.email,
         address: form.address,
         city: form.city,
+        state: form.state,
         pin: form.pin,
       },
       items: lines.map((l) => ({
@@ -69,21 +126,27 @@ export default function Checkout() {
       setRzpEnabled(Boolean(c.razorpayEnabled))
       setMethod(c.razorpayEnabled ? 'online' : 'cod')
     })
+
+    fetch('/api/config/cod-fees')
+      .then((r) => r.json())
+      .then((data) => setCodConfig(data))
+      .catch((err) => console.error('Could not load COD fee settings:', err))
   }, [])
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
   const formValid =
-    form.name && form.phone && form.email && form.address && form.city && form.pin && pinMatchesDealer
+    form.name && form.phone && form.email && form.address && form.city && form.state && form.pin && pinMatchesDealer
 
-  async function payWithRazorpay() {
+  async function payWithRazorpay(isCodFee = false) {
     setError('')
     setBusy(true)
     try {
       const ok = await loadRazorpay()
       if (!ok) throw new Error('Could not load the payment gateway. Check your connection.')
 
-      const order = await createOrder(total * 100, `ssbikes_${Date.now()}`)
+      const payAmount = isCodFee ? logisticsFee : total
+      const order = await createOrder(payAmount * 100, `ssbikes_${Date.now()}`)
 
       await new Promise((resolve, reject) => {
         const rzp = new window.Razorpay({
@@ -91,7 +154,9 @@ export default function Checkout() {
           amount: order.amount,
           currency: order.currency,
           name: 'SS Bikes',
-          description: `${count} item${count > 1 ? 's' : ''} · e-cycle order`,
+          description: isCodFee
+            ? `Logistics Fee · e-cycle order`
+            : `${count} item${count > 1 ? 's' : ''} · e-cycle order`,
           order_id: order.orderId,
           prefill: { name: form.name, email: form.email, contact: form.phone },
           notes: { address: `${form.address}, ${form.city} ${form.pin}` },
@@ -105,7 +170,7 @@ export default function Checkout() {
               try {
                 await saveOrder(
                   buildOrderPayload({
-                    paymentMethod: 'online',
+                    paymentMethod: isCodFee ? 'cod' : 'online',
                     razorpayOrderId: resp.razorpay_order_id,
                     razorpayPaymentId: result.paymentId,
                   }),
@@ -114,7 +179,20 @@ export default function Checkout() {
                 console.error('order save failed after successful payment:', saveErr)
               }
               clear()
-              setPlaced({ method: 'online', paymentId: result.paymentId })
+              if (isCodFee) {
+                setPlaced({
+                  method: 'cod-partial',
+                  paymentId: result.paymentId,
+                  amountPaid: payAmount,
+                  remaining: total - payAmount,
+                })
+              } else {
+                setPlaced({
+                  method: 'online',
+                  paymentId: result.paymentId,
+                  total,
+                })
+              }
               resolve()
             } else {
               reject(new Error('Payment could not be verified. You were not charged.'))
@@ -139,7 +217,7 @@ export default function Checkout() {
     try {
       await saveOrder(buildOrderPayload({ paymentMethod: 'cod' }))
       clear()
-      setPlaced({ method: 'cod' })
+      setPlaced({ method: 'cod', total })
     } catch (e) {
       setError(e.message || 'Could not place your order. Please try again.')
     } finally {
@@ -150,8 +228,15 @@ export default function Checkout() {
   function onSubmit(e) {
     e.preventDefault()
     if (!formValid) return
-    if (method === 'online') payWithRazorpay()
-    else placeCOD()
+    if (method === 'online') {
+      payWithRazorpay(false)
+    } else {
+      if (rzpEnabled) {
+        payWithRazorpay(true)
+      } else {
+        placeCOD()
+      }
+    }
   }
 
   // ---- success ----
@@ -166,12 +251,19 @@ export default function Checkout() {
           <p style={{ color: 'var(--muted)', margin: '12px 0 8px' }}>
             {placed.method === 'online'
               ? 'Payment received — thank you for choosing SS Bikes.'
+              : placed.method === 'cod-partial'
+              ? `Upfront logistics fee of ${formatINR(placed.amountPaid)} received — thank you for choosing SS Bikes.`
               : 'Your Cash on Delivery order is placed — thank you for choosing SS Bikes.'}
           </p>
           {placed.paymentId && (
-            <p style={{ color: 'var(--muted)', marginBottom: 20, fontSize: '0.9rem' }}>
+            <p style={{ color: 'var(--muted)', marginBottom: 12, fontSize: '0.9rem' }}>
               Payment ID: <b style={{ color: 'var(--ink)' }}>{placed.paymentId}</b>
             </p>
+          )}
+          {placed.method === 'cod-partial' && (
+            <div className="notice" style={{ marginBottom: 20, display: 'block', textAlign: 'center' }}>
+              Balance to pay on delivery: <b>{formatINR(placed.remaining)}</b>
+            </div>
           )}
           <p style={{ color: 'var(--muted)', margin: '0 0 24px' }}>
             Our team will call you to arrange delivery. Be electrified! ⚡
@@ -247,6 +339,17 @@ export default function Checkout() {
                 <input required value={form.city} onChange={set('city')} placeholder="City" />
               </div>
               <div className="input">
+                <label>State</label>
+                <select required value={form.state} onChange={set('state')}>
+                  <option value="" disabled>Select State</option>
+                  {INDIAN_STATES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="input">
                 <label>PIN code</label>
                 <input required value={form.pin} onChange={set('pin')} placeholder="000000" />
                 {dealer && form.pin && !pinMatchesDealer && (
@@ -300,6 +403,16 @@ export default function Checkout() {
                 </div>
               )}
 
+              {method === 'cod' && rzpEnabled && (
+                <div className="input full">
+                  <div className="notice">
+                    <Lock size={16} /> To secure your shipment, a non-refundable logistics fee of{' '}
+                    <b>{formatINR(logisticsFee)}</b> must be paid online upfront. The remaining balance of{' '}
+                    <b>{formatINR(remainingCod)}</b> will be collected in cash upon delivery.
+                  </div>
+                </div>
+              )}
+
               {error && (
                 <div className="input full">
                   <div className="notice notice--error">{error}</div>
@@ -314,6 +427,8 @@ export default function Checkout() {
                     </>
                   ) : method === 'online' ? (
                     `Pay ${formatINR(total)} securely`
+                  ) : rzpEnabled ? (
+                    `Pay ${formatINR(logisticsFee)} upfront & place COD order`
                   ) : (
                     `Place order · ${formatINR(total)}`
                   )}

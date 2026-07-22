@@ -2645,3 +2645,35 @@ ul {
   border-color: #2874f0;
   background: #eff4fe;
 }
+
+/* Admin Users table & permission management */
+.admin-table__row--users {
+  grid-template-columns: 1.5fr 1fr 2fr 1.2fr 100px;
+}
+.permission-groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+.permission-group {
+  background: var(--soft);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+}
+.permission-group h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.permission-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+

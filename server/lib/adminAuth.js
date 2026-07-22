@@ -22,6 +22,7 @@ export const PERMISSIONS = [
   { key: 'manageDealers', label: 'Manage dealer stores & applications', group: 'Dealers' },
   { key: 'viewTestDrives', label: 'View test drive bookings', group: 'Test Drives' },
   { key: 'manageTestDrives', label: 'Update test drive status', group: 'Test Drives' },
+  { key: 'manageSettings', label: 'Manage COD settings & state fees', group: 'Settings' },
 ]
 
 const PERMISSION_KEYS = PERMISSIONS.map((p) => p.key)

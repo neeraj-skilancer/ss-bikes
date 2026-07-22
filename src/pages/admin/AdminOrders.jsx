@@ -168,6 +168,12 @@ export default function AdminOrders() {
                     <h4>Meta</h4>
                     <p>Placed: {fmtDate(o.createdAt)}</p>
                     <p>Payment status: {o.paymentStatus}</p>
+                    {o.paymentMethod === 'cod' && o.upfrontPaid != null && o.upfrontPaid > 0 && (
+                      <>
+                        <p>Upfront Paid: {formatINR(o.upfrontPaid)}</p>
+                        <p>COD Balance: {formatINR(o.remainingCodAmount)}</p>
+                      </>
+                    )}
                     {o.dealerName && <p>Dealer: {o.dealerName}</p>}
                     {o.razorpayPaymentId && <p>Payment ID: {o.razorpayPaymentId}</p>}
                   </div>

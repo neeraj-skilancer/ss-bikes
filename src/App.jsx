@@ -23,6 +23,8 @@ import AdminDealers from './pages/admin/AdminDealers'
 import AdminDealerStores from './pages/admin/AdminDealerStores'
 import AdminDealerProducts from './pages/admin/AdminDealerProducts'
 import AdminTestDrive from './pages/admin/AdminTestDrive'
+import AdminUsers from './pages/admin/AdminUsers'
+import AdminSettings from './pages/admin/AdminSettings'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -51,6 +53,8 @@ export default function App() {
             <Route path="dealer-stores" element={<AdminDealerStores />} />
             <Route path="dealer-stores/:slug/products" element={<AdminDealerProducts />} />
             <Route path="test-drive-bookings" element={<AdminTestDrive />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
         </Routes>
       </>

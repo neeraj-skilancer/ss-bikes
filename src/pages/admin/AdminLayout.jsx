@@ -11,6 +11,7 @@ import {
   LogOut,
   Loader2,
   ExternalLink,
+  Settings,
 } from 'lucide-react'
 import { adminMe, adminLogout } from '../../lib/adminApi'
 import { AdminSessionProvider } from '../../context/AdminSessionContext'
@@ -82,6 +83,11 @@ export default function AdminLayout() {
             {isOwner && (
               <NavLink to="/admin/users">
                 <Users size={17} /> Manage Users
+              </NavLink>
+            )}
+            {can('manageSettings') && (
+              <NavLink to="/admin/settings">
+                <Settings size={17} /> Settings
               </NavLink>
             )}
           </nav>
