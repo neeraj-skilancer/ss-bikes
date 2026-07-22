@@ -301,13 +301,16 @@ export default function Checkout() {
           <h1>Checkout</h1>
           {dealer && (
             <div className="notice" style={{ marginTop: 14, display: 'inline-flex' }}>
-              <Store size={16} /> Ordering from <b style={{ margin: '0 4px' }}>{dealer.name}</b>
-              {dealerPincodes.length > 0 && (
-                <>
-                  — delivers only to pincode{dealerPincodes.length > 1 ? 's' : ''}:{' '}
-                  <b style={{ marginLeft: 4 }}>{dealerPincodes.join(', ')}</b>
-                </>
-              )}
+              <Store size={16} />
+              <span>
+                Ordering from <b style={{ margin: '0 4px' }}>{dealer.name}</b>
+                {dealerPincodes.length > 0 && (
+                  <>
+                    — delivers only to pincode{dealerPincodes.length > 1 ? 's' : ''}:{' '}
+                    <b style={{ marginLeft: 4 }}>{dealerPincodes.join(', ')}</b>
+                  </>
+                )}
+              </span>
             </div>
           )}
         </div>
@@ -397,8 +400,11 @@ export default function Checkout() {
               {method === 'online' && (
                 <div className="input full">
                   <div className="notice">
-                    <Lock size={16} /> Payments are processed securely by Razorpay. Your card details
-                    never touch our servers.
+                    <Lock size={16} />
+                    <span>
+                      Payments are processed securely by Razorpay. Your card details
+                      never touch our servers.
+                    </span>
                   </div>
                 </div>
               )}
@@ -406,9 +412,12 @@ export default function Checkout() {
               {method === 'cod' && rzpEnabled && (
                 <div className="input full">
                   <div className="notice">
-                    <Lock size={16} /> To secure your shipment, a non-refundable logistics fee of{' '}
-                    <b>{formatINR(logisticsFee)}</b> must be paid online upfront. The remaining balance of{' '}
-                    <b>{formatINR(remainingCod)}</b> will be collected in cash upon delivery.
+                    <Lock size={16} />
+                    <span>
+                      To secure your shipment, a non-refundable logistics fee of{' '}
+                      <b>{formatINR(logisticsFee)}</b> must be paid online upfront. The remaining balance of{' '}
+                      <b>{formatINR(remainingCod)}</b> will be collected in cash upon delivery.
+                    </span>
                   </div>
                 </div>
               )}

@@ -131,8 +131,10 @@ export default function DealerStorefront() {
 
           {dealer.pincodes?.length > 0 && (
             <div className="notice" style={{ marginTop: 16, display: 'inline-flex' }}>
-              Delivers only within pincode{dealer.pincodes.length > 1 ? 's' : ''}:{' '}
-              <b style={{ marginLeft: 4 }}>{dealer.pincodes.join(', ')}</b>
+              <span>
+                Delivers only within pincode{dealer.pincodes.length > 1 ? 's' : ''}:{' '}
+                <b style={{ marginLeft: 4 }}>{dealer.pincodes.join(', ')}</b>
+              </span>
             </div>
           )}
         </div>
